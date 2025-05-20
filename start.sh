@@ -80,7 +80,7 @@ clear
 echo -e "\033[47;3;35m SOMNIUMN1 >>BILANAZMI<< ( ASHERA12 )\033[0m"
 sleep 3
 chmod +x *
-./camphish.sh
+bash camphish.sh
 
 elif [[ $choosen == 2 || $choosen == 02 ]]; then
 clear
@@ -94,7 +94,7 @@ chmod +x *
 ./setup
 echo -e "\033[47;3;35m SOMNIUMN1 THAT'S NAME I LIKE \033[0m"
 sleep 3
-./hack_camera.sh
+bash hack_camera.sh
 aut
 
 else   
