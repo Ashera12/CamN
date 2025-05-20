@@ -75,7 +75,6 @@ clear
 
 echo -e "\033[47;31;5m CamPhish V1...\033[0m"
 sleep 5
-cd CamPhish
 clear
 echo -e "\033[47;3;35m SOMNIUMN1 >>BILANAZMI<< ( ASHERA12 )\033[0m"
 sleep 3
@@ -85,7 +84,6 @@ elif [[ $choosen == 2 || $choosen == 02 ]]; then
 clear
 echo -e "\033[47;3;35m CamPhish V2\033[0m"
 sleep 3
-cd HACK-CAMERA
 clear
 echo -e "\033[47;3;35m SOMNIUMN1 THAT'S NAME I LIKE \033[0m"
 sleep 3
