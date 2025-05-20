@@ -69,8 +69,8 @@ bash start.sh
 <p><b>Version: 1.3:</b> Fix ngrok direct link</p>
  <p><b>Version: 1.5:</b> fix the heart of the woman i love</p>
 
-#### Follow my Ig @tell_hack </a>
-<a href="https://instagram.com/tell_hack" target="_blank">
+#### Follow my Ig @somniumn1 </a>
+<a href="https://instagram.com/somniumn1" target="_blank">
 <img src=https://img.shields.io/badge/instagram-%23000000.svg?&style=for-the-badge&logo=instagram&logoColor=white alt=instagram style="margin-bottom: 5px;" />
 </a>  
 <p>CamPhish is created to help in penetration testing and it's not responsible for any misuse or illegal purposes.</p>
