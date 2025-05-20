@@ -79,7 +79,7 @@ bash start.sh
 <img src=https://img.shields.io/badge/github-%2324292e.svg?&style=for-the-badge&logo=github&logoColor=white alt=github style="margin-bottom: 5px;" />
 </a>
 
-  Big thanks to @thelinuxchoice
+  Big thanks to @thelinuxchoice and @xphantom
 </p>
 <p>هذا كل شيء مني، شكرا لك</p>
 
