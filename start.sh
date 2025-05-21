@@ -3,33 +3,29 @@
 clear
 
 # Define colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-WHITE='\033[0;37m'
-RESET='\033[0m'
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+BLUE="\033[0;34m"
+MAGENTA="\033[0;35m"
+CYAN="\033[0;36m"
+WHITE="\033[0;37m"
+RESET="\033[0m"
 
 
-logo="    
-${blue}  _   _    _    ____ _  __      ____    _    __  __ _____ ____      _    
-${blue} | | | |  / \  / ___| |/ /     / ___|  / \  |  \/  | ____|  _ \    / \   
-${blue} | |_| | / _ \| |   | ' /_____| |     / _ \ | |\/| |  _| | |_) |  / _ \  
-${blue} |  _  |/ ___ \ |___| . \_____| |___ / ___ \| |  | | |___|  _ <  / ___ \ 
-${blue} |_| |_/_/   \_\____|_|\_\     \____/_/   \_\_|  |_|_____|_| \_\/_/   \_\
+logo="
+${BLUE}  _   _    _    ____ _  __      ____    _    __  __ _____ ____      _    
+${BLUE} | | | |  / \  / ___| |/ /     / ___|  / \  |  \/  | ____|  _ \    / \   
+${BLUE} | |_| | / _ \| |   | ' /_____| |     / _ \ | |\/| |  _| | |_) |  / _ \  
+${BLUE} |  _  |/ ___ \ |___| . \_____| |___ / ___ \| |  | | |___|  _ <  / ___ \ 
+${BLUE} |_| |_/_/   \_\____|_|\_\     \____/_/   \_\_|  |_|_____|_| \_\/_/   \_\
 
-${green}                                               [By X PHANTOM (PH4N7OM)]
+${GREEN}                                               [By X PHANTOM (PH4N7OM)]
 
 ${RED}                                           [By SomniumN1 (Ashera12)]
 
 ${GREEN}     I Love Her .. lol          >> BiLaNazmi<< [SomniumN1]
- 
 "
-# Display logo
-echo -e "${logo}"     
-
 # Define functions
 function display_menu() {
   echo -e "${WHITE} ${logo}"
