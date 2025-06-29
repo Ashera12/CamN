@@ -52,7 +52,8 @@ apt-get -y install php openssh git wget
 git clone https://github.com/Ashera12/CamN
 cd CamN
 chmod +x *
-bash start.sh
+pip install colorama
+python start.sh
 ```
 
 ## Change Log:
