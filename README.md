@@ -52,7 +52,7 @@ pip install colorama
 ```
 git clone https://github.com/Ashera12/CamN
 cd CamN
-python start.sh
+python launcher.py
 ```
 
 ## Change Log:
