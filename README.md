@@ -44,6 +44,7 @@ OR
 
 ```
 apt-get -y install php openssh git wget
+pip install colorama
 ```
 
 ## Installing (Kali Linux/Termux):
@@ -51,8 +52,6 @@ apt-get -y install php openssh git wget
 ```
 git clone https://github.com/Ashera12/CamN
 cd CamN
-chmod +x *
-pip install colorama
 python start.sh
 ```
 
