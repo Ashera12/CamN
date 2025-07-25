@@ -46,6 +46,9 @@ OR
 apt-get -y install php openssh git wget
 pip install colorama
 pip install pywin32
+pip install openpyxl
+pip install uno
+pip install systemd
 ```
 
 ## Installing (Kali Linux/Termux):
