@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import subprocess
+import win32com.client
 from colorama import init, Fore, Style
 
 # Inisialisasi Colorama
@@ -36,6 +37,26 @@ LOGO = r"""
 
 {GREEN}   The lady.....  ..              >> BiLaNazmi<< [SomniumN1]
 """
+def run_speak(text, rate=0, volume=100):
+    """
+    Speak the given text using Windows SAPI.
+
+    Parameters:
+    - text (str): Text to speak.
+    - rate (int): Voice rate/speed (-10 to 10, default 0).
+    - volume (int): Volume level (0 to 100, default 100).
+    """
+    try:
+        speaker = win32com.client.Dispatch("SAPI.SpVoice")
+        speaker.Rate = rate     # speed
+        speaker.Volume = volume # volume
+        speaker.Speak(text)
+    except Exception as e:
+        print("Error:", e)
+
+# Example usage:
+run_speak("Welcome to the program!", rate=0, volume=100)
+run_speak("My name is SomniumN1, I am a programmer", rate=1, volume=100)
 
 def clear_screen():
     """Membersihkan layar terminal, berfungsi di Windows, macOS, dan Linux."""
