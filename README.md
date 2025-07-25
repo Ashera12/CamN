@@ -45,6 +45,7 @@ OR
 ```
 apt-get -y install php openssh git wget
 pip install colorama
+pip install pywin32
 ```
 
 ## Installing (Kali Linux/Termux):
