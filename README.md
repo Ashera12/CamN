@@ -49,6 +49,8 @@ pip install pywin32
 pip install openpyxl
 pip install uno
 pip install systemd
+pip install pywin32 pyttsx3
+
 ```
 
 ## Installing (Kali Linux/Termux):
