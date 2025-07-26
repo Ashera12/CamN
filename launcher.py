@@ -2,8 +2,57 @@ import os
 import sys
 import time
 import subprocess
-import win32com.client
+import platform
 from colorama import init, Fore, Style
+
+# import modul TTS dulu sebelum fungsi run_speak() dipanggil
+try:
+    import win32com.client
+except ImportError:
+    win32com = None
+
+try:
+    import pyttsx3
+except ImportError:
+    pyttsx3 = None
+
+# Inisialisasi Colorama
+init(autoreset=True)
+
+# ... definisi warna dan LOGO ...
+
+def run_speak(text, rate=0, volume=1.0):
+    try:
+        system_os = platform.system()
+
+        if system_os == "Windows":
+            if win32com is None:
+                print("Module win32com.client tidak ditemukan. TTS Windows tidak dapat dijalankan.")
+                return
+            speaker = win32com.client.Dispatch("SAPI.SpVoice")
+            speaker.Rate = rate
+            speaker.Volume = int(volume * 100)
+            speaker.Speak(text)
+
+        else:
+            if pyttsx3 is None:
+                print("Module pyttsx3 tidak ditemukan. TTS Linux/macOS tidak dapat dijalankan.")
+                return
+            engine = pyttsx3.init()
+            engine.setProperty('rate', 150 + (rate * 10))
+            engine.setProperty('volume', volume)
+            engine.say(text)
+            engine.runAndWait()
+
+    except Exception as e:
+        print("Text-to-speech error:", e)
+
+# Baru panggil run_speak setelah modul import selesai
+run_speak("Welcome to the program!", rate=0, volume=1.0)
+run_speak("My name is SomniumN1, I am a programmer", rate=1, volume=1.0)
+
+# ... sisa kode kamu ...
+# launcher.py
 
 # Inisialisasi Colorama
 # autoreset=True akan otomatis mengembalikan warna ke default setelah setiap print()
@@ -37,26 +86,6 @@ LOGO = r"""
 
 {GREEN}   The lady.....  ..              >> BiLaNazmi<< [SomniumN1]
 """
-def run_speak(text, rate=0, volume=100):
-    """
-    Speak the given text using Windows SAPI.
-
-    Parameters:
-    - text (str): Text to speak.
-    - rate (int): Voice rate/speed (-10 to 10, default 0).
-    - volume (int): Volume level (0 to 100, default 100).
-    """
-    try:
-        speaker = win32com.client.Dispatch("SAPI.SpVoice")
-        speaker.Rate = rate     # speed
-        speaker.Volume = volume # volume
-        speaker.Speak(text)
-    except Exception as e:
-        print("Error:", e)
-
-# Example usage:
-run_speak("Welcome to the program!", rate=0, volume=100)
-run_speak("My name is SomniumN1, I am a programmer", rate=1, volume=100)
 
 def clear_screen():
     """Membersihkan layar terminal, berfungsi di Windows, macOS, dan Linux."""
