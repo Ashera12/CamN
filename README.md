@@ -42,15 +42,22 @@ OR
 
 [![Officlia sites](https://img.shields.io/badge/Official-Termux-<COLOR_CODE>)]( https://termux.dev/en)
 
+##Kali Linux
 ```
 apt-get -y install php openssh git wget
+source ~/venv/bin/activate
+pip install pyttsx3
+sudo apt install espeak
 pip install colorama
-pip install pywin32
 pip install openpyxl
 pip install uno
 pip install systemd
+```
+##Windows
+```
+apt-get -y install php openssh git wget
+pip install colorama
 pip install pywin32 pyttsx3
-
 ```
 
 ## Installing (Kali Linux/Termux):
