@@ -48,6 +48,7 @@ apt-get -y install php openssh git wget
 source ~/venv/bin/activate
 pip install pyttsx3
 sudo apt install espeak
+sudo apt install alsa-utils
 pip install colorama
 pip install openpyxl
 pip install uno
