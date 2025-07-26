@@ -42,7 +42,7 @@ OR
 
 [![Officlia sites](https://img.shields.io/badge/Official-Termux-<COLOR_CODE>)]( https://termux.dev/en)
 
-##Kali Linux
+## Kali Linux
 ```
 apt-get -y install php openssh git wget
 source ~/venv/bin/activate
@@ -53,7 +53,7 @@ pip install openpyxl
 pip install uno
 pip install systemd
 ```
-##Windows
+## Windows
 ```
 apt-get -y install php openssh git wget
 pip install colorama
