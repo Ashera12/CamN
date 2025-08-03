@@ -44,6 +44,9 @@ OR
 
 ## Kali Linux
 ```
+sudo apt install python3-venv
+python3 -m venv venv-ku
+source venv-ku/bin/activate
 apt-get -y install php openssh git wget
 source ~/venv/bin/activate
 pip install pyttsx3
@@ -98,3 +101,4 @@ python launcher.py
 <p>هذا كل شيء مني، شكرا لك</p>
 
 #                                                                                                                                                                          
+
