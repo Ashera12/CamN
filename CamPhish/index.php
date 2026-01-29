@@ -1,5 +1,6 @@
 <?php
 include 'ip.php';
-header('Location: https://1c155a77adadab53153da35723201208.serveo.net/index2.html');
-exit
+// Use a local redirect so the page works without an external tunnel.
+header('Location: index2.html');
+exit;
 ?>

