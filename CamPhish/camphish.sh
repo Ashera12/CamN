@@ -247,63 +247,52 @@ ngrok_server() {
 if [[ -e ngrok ]]; then
 echo ""
 else
-command -v unzip > /dev/null 2>&1 || { echo >&2 "I require unzip but it's not installed. Install it. Aborting.Aiwah Cok"; exit 1; }
-command -v wget > /dev/null 2>&1 || { echo >&2 "I require wget but it's not installed. Install it. Aborting.Awah Cok"; exit 1; }
-printf "\e[1;92m[\e[0m+\e[1;92m] Downloading Ngrok...\n"
-arch=$(uname -a | grep -o 'arm' | head -n1)
-arch2=$(uname -a | grep -o 'Android' | head -n1)
-arch3=$(uname -a | grep -o 'aarch64' | head -n1)
-arch4=$(uname -a | grep -o 'Darwin' | head -n1)
-if [[ $arch == *'arm'* ]] || [[ $arch2 == *'Android'* ]] && [[ $arch4 != *'Darwin'* ]] ; then
-wget --no-check-certificate https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm.zip > /dev/null 2>&1
-
-if [[ -e ngrok-v3-stable-linux-arm.zip ]]; then
-unzip ngrok-v3-stable-linux-arm.zip > /dev/null 2>&1
-chmod +x ngrok
-rm -rf ngrok-v3-stable-linux-arm.zip
-else
-printf "\e[1;93m[!] Download error... Termux, run:\e[0m\e[1;77m pkg install wget\e[0m\n"
-exit 1
-fi
-elif [[ $arch3 == *'aarch64'* ]] ; then
-wget --no-check-certificate https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm64.zip > /dev/null 2>&1
- 
-if [[ -e ngrok-v3-stable-linux-arm64.zip ]]; then
-unzip ngrok-v3-stable-linux-arm64.zip > /dev/null 2>&1
-chmod +x ngrok
-rm -rf ngrok-v3-stable-linux-arm64.zip
-else
-printf "\e[1;93m[!] Download error...TOLOLL\e[0m\n"
-exit 1
-fi
-elif [[ $arch4 == *'Darwin'* ]] ; then
-wget --no-check-certificate https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-arm64.zip> /dev/null 2>&1
- 
-if [[ -e ngrok-v3-stable-darwin-arm64.zip ]]; then
-unzip ngrok-v3-stable-darwin-arm64.zip > /dev/null 2>&1
-chmod +x ngrok
-rm -rf ngrok-v3-stable-darwin-arm64.zip
-else
-printf "\e[1;93m[!] Download error...\e[0m\n"
-exit 1
-fi
-
-else
-wget --no-check-certificate https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip > /dev/null 2>&1 
-if [[ -e ngrok-v3-stable-linux-amd64.zip ]]; then
-unzip ngrok-v3-stable-linux-amd64.zip > /dev/null 2>&1
-chmod +x ngrok
-rm -rf ngrok-v3-stable-linux-amd64.zip
-else
-printf "\e[1;93m[!] Download error... Lahhh\e[0m\n"
-exit 1
-fi
-fi
+	command -v unzip > /dev/null 2>&1 || { echo >&2 "I require unzip but it's not installed. Install it. Aborting."; exit 1; }
+	command -v wget > /dev/null 2>&1 || { echo >&2 "I require wget but it's not installed. Install it. Aborting."; exit 1; }
+	printf "\e[1;92m[\e[0m+\e[1;92m] Downloading ngrok...\n"
+	
+	# Better architecture detection
+	local ngrok_url=""
+	local ngrok_file=""
+	
+	# Check for macOS first
+	if [[ "$OSTYPE" == "darwin"* ]] || [[ "$PLATFORM" == "Darwin"* ]]; then
+		ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-arm64.zip"
+		ngrok_file="ngrok-v3-stable-darwin-arm64.zip"
+	# Check for ARM/Termux
+	elif uname -m | grep -q -E 'armv|arm64|aarch64'; then
+		if uname -m | grep -q 'aarch64'; then
+			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm64.zip"
+			ngrok_file="ngrok-v3-stable-linux-arm64.zip"
+		else
+			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm.zip"
+			ngrok_file="ngrok-v3-stable-linux-arm.zip"
+		fi
+	# Default to x86_64
+	else
+		ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
+		ngrok_file="ngrok-v3-stable-linux-amd64.zip"
+	fi
+	
+	# Download
+	if wget --no-check-certificate "$ngrok_url" > /dev/null 2>&1; then
+		if [[ -e "$ngrok_file" ]]; then
+			unzip "$ngrok_file" > /dev/null 2>&1
+			chmod +x ngrok
+			rm -rf "$ngrok_file"
+			printf "\e[1;92m[\e[0m*\e[1;92m] ngrok downloaded successfully.\e[0m\n"
+		else
+			printf "\e[1;93m[!] Download file not found. Trying alternative method...\e[0m\n"
+			exit 1
+		fi
+	else
+		printf "\e[1;93m[!] Download failed. Check your internet connection.\e[0m\n"
+		exit 1
+	fi
 fi
 
-# Ngrok authtoken setup - automatic and flexible
-printf "\e[1;92m[\e[0m+\e[1;92m] Configuring ngrok authtoken...\n"
-if [[ -e ~/.ngrok2/ngrok.yml ]]; then
+# Setup ngrok authtoken
+if [[ -f ~/.ngrok2/ngrok.yml ]]; then
 	printf "\e[1;93m[\e[0m*\e[1;93m] ngrok authtoken already configured.\n"
 	read -p $'\e[1;92m[\e[0m+\e[1;92m] Use existing token or enter new one? (E=existing / N=new) [Default: E]: \e[0m' token_choice
 	token_choice="${token_choice:-E}"
@@ -408,7 +397,6 @@ else
 		printf "\e[1;31m[!] No tunneling binary found and no Serveo output detected. Install ngrok or use Serveo.\e[0m\n"
 		exit 1
 	fi
-fi
 fi
 payload_ngrok
 checkfound

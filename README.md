@@ -73,6 +73,12 @@ python launcher.py
 ```
 
 ## Change Log:
+<p><b>Version: 1.8 (2026-02-03):</b> Bash launcher & PHP logging fixes — CRLF / ngrok syntax repaired, added verification script; all verification tests passed (25/25).</p>
+<ul>
+  <li>Fixed: cross-platform bash launcher (Git Bash/Termux/Kali) and ngrok authtoken flow</li>
+  <li>Fixed: IP & camera logging structured to text + JSON; added preview mode</li>
+  <li>Added: `verify_complete_system.sh` to validate syntax, dependencies, and functions</li>
+</ul>
 
 <p><b>Version: 1.7:</b> Fix and add support</p>
 <ul>
