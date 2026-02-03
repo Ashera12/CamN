@@ -289,57 +289,74 @@ try_ngrok() {
 		return 1
 	fi
 
-	echo "[DEBUG] Starting: $NGROK_CMD http 3333" >&2
+	printf "\e[1;92m[+] Starting ngrok http 3333...\e[0m\n"
 	
 	# Start ngrok - output everything to ngrok.log
 	$NGROK_CMD http 3333 > ngrok.log 2>&1 &
 	local ngrok_pid=$!
-	echo "[DEBUG] ngrok PID: $ngrok_pid" >&2
+	printf "\e[1;92m[+] ngrok PID: $ngrok_pid\e[0m\n"
 	
-	# Wait for file to be created and written
+	# Wait for startup
 	sleep 2
 	
 	# Check process still alive
 	if ! kill -0 $ngrok_pid 2>/dev/null; then
-		echo "[!] ngrok died immediately" >&2
-		cat ngrok.log >&2
+		printf "\e[1;31m[!] ngrok failed to start\e[0m\n"
+		printf "\e[1;93m[DEBUG] Full ngrok.log:\e[0m\n"
+		cat ngrok.log
 		return 1
 	fi
 	
-	echo "[DEBUG] Polling for tunnel URL..." >&2
+	printf "\e[1;92m[+] Polling for tunnel URL (20 sec timeout)...\e[0m\n"
 	
-	# Poll for link - simpler version, just check the log file
+	# Poll for link
 	local attempts=0
-	while [[ $attempts -lt 25 ]]; do
+	while [[ $attempts -lt 20 ]]; do
 		attempts=$((attempts+1))
 		
 		# Check if link is in the log
 		local link=$(grep -o 'https://[A-Za-z0-9.-]*\.ngrok\.io' ngrok.log 2>/dev/null | head -1)
 		if [[ -n "$link" ]]; then
-			echo "[DEBUG] Found link: $link" >&2
+			printf "\e[1;92m[✓] Got ngrok URL after $attempts sec: $link\e[0m\n"
 			echo "$link"
 			return 0
 		fi
 		
-		# Show progress
+		# Show progress every 5 sec
 		if (( attempts % 5 == 0 )); then
-			echo "[DEBUG] Attempt $attempts/25..." >&2
+			printf "\e[1;92m[+] Still waiting... ($attempts/20 sec)\e[0m\n"
 		fi
 		
 		# Check if ngrok is still alive
 		if ! kill -0 $ngrok_pid 2>/dev/null; then
-			echo "[!] ngrok died" >&2
-			cat ngrok.log >&2
+			printf "\e[1;31m[!] ngrok process died at attempt $attempts\e[0m\n"
+			printf "\e[1;93m[DEBUG] Full ngrok.log:\e[0m\n"
+			cat ngrok.log
 			return 1
 		fi
 		
 		sleep 1
 	done
 	
-	# Timeout
-	echo "[!] Timeout waiting for ngrok tunnel" >&2
-	echo "[DEBUG] Last 20 lines of ngrok.log:" >&2
-	tail -20 ngrok.log >&2
+	# Timeout - show full log for debugging
+	printf "\e[1;31m[!] TIMEOUT: ngrok did not produce tunnel URL in 20 seconds\e[0m\n"
+	printf "\e[1;93m[DEBUG] Full ngrok.log for debugging:\e[0m\n"
+	cat ngrok.log
+	
+	# Check if it's a blocked account error
+	if grep -q "blocked" ngrok.log || grep -q "ERR_NGROK" ngrok.log; then
+		printf "\n\e[1;31m[!] NGROK ACCOUNT ISSUE DETECTED!\e[0m\n"
+		printf "\e[1;31m[!] Your ngrok account may be:\e[0m\n"
+		printf "    - Blocked for violating ToS\n"
+		printf "    - Rate limited\n"
+		printf "    - Suspended\n"
+		printf "\e[1;93m[*] Solutions:\e[0m\n"
+		printf "    1. Go to https://dashboard.ngrok.com\n"
+		printf "    2. Check your account status\n"
+		printf "    3. Create a NEW account if needed\n"
+		printf "    4. Get a NEW authtoken\n"
+	fi
+	
 	kill $ngrok_pid 2>/dev/null || true
 	return 1
 }
