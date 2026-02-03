@@ -169,7 +169,10 @@ function get_ip_geolocation($ip) {
     $result = [
         'country' => 'Unknown',
         'city' => 'Unknown',
+        'postal_code' => 'Unknown',
         'isp' => 'Unknown',
+        'as_name' => 'Unknown',
+        'organization' => 'Unknown',
         'latitude' => 'N/A',
         'longitude' => 'N/A'
     ];
@@ -187,7 +190,7 @@ function get_ip_geolocation($ip) {
     // Try multiple free geolocation APIs
     $apis = [
         'https://ipapi.co/' . $ip . '/json/',
-        'https://ip-api.com/json/' . $ip . '?fields=country,city,isp,lat,lon',
+        'https://ip-api.com/json/' . $ip . '?fields=country,city,postal,isp,as,org,lat,lon',
         'https://ipwho.is/' . $ip
     ];
     
@@ -206,18 +209,37 @@ function get_ip_geolocation($ip) {
             if ($data) {
                 // Parse different API response formats
                 if (isset($data['country_name'])) {
-                    $result['country'] = $data['country_name'];
+                    // ipapi.co format
+                    $result['country'] = $data['country_name'] ?? 'Unknown';
                     $result['city'] = $data['city'] ?? 'Unknown';
+                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
                     $result['isp'] = $data['org'] ?? 'Unknown';
+                    $result['as_name'] = $data['asn'] ?? 'Unknown';
+                    $result['organization'] = $data['org'] ?? 'Unknown';
                     $result['latitude'] = $data['latitude'] ?? 'N/A';
                     $result['longitude'] = $data['longitude'] ?? 'N/A';
                     break;
                 } elseif (isset($data['country'])) {
-                    $result['country'] = $data['country'];
+                    // ip-api.com format
+                    $result['country'] = $data['country'] ?? 'Unknown';
                     $result['city'] = $data['city'] ?? 'Unknown';
+                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
                     $result['isp'] = $data['isp'] ?? 'Unknown';
+                    $result['as_name'] = $data['as'] ?? 'Unknown';
+                    $result['organization'] = $data['org'] ?? 'Unknown';
                     $result['latitude'] = $data['lat'] ?? 'N/A';
                     $result['longitude'] = $data['lon'] ?? 'N/A';
+                    break;
+                } elseif (isset($data['country_name']) || isset($data['country_code'])) {
+                    // ipwho.is format
+                    $result['country'] = $data['country_name'] ?? $data['country_code'] ?? 'Unknown';
+                    $result['city'] = $data['city'] ?? 'Unknown';
+                    $result['postal_code'] = $data['postal_code'] ?? 'Unknown';
+                    $result['isp'] = $data['isp'] ?? 'Unknown';
+                    $result['as_name'] = $data['asn'] ?? 'Unknown';
+                    $result['organization'] = $data['org'] ?? 'Unknown';
+                    $result['latitude'] = $data['latitude'] ?? 'N/A';
+                    $result['longitude'] = $data['longitude'] ?? 'N/A';
                     break;
                 }
             }
