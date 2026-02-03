@@ -1,0 +1,59 @@
+[
+    {
+        "timestamp": "2026-02-03 05:48:50",
+        "timestamp_unix": 1770097730,
+        "filename": "cam_03Feb2026054850.png",
+        "full_path": "C:\\Users\\Irga\\git irga\\CamN\\cam_03Feb2026054850.png",
+        "size_bytes": 74608,
+        "size_kb": 72.86,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "114.122.74.226",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+        "status": "success"
+    },
+    {
+        "timestamp": "2026-02-03 05:48:54",
+        "timestamp_unix": 1770097734,
+        "filename": "cam_03Feb2026054854.png",
+        "full_path": "C:\\Users\\Irga\\git irga\\CamN\\cam_03Feb2026054854.png",
+        "size_bytes": 74608,
+        "size_kb": 72.86,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "114.122.74.226",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+        "status": "success"
+    },
+    {
+        "timestamp": "2026-02-03 05:48:58",
+        "timestamp_unix": 1770097738,
+        "filename": "cam_03Feb2026054858.png",
+        "full_path": "C:\\Users\\Irga\\git irga\\CamN\\cam_03Feb2026054858.png",
+        "size_bytes": 74608,
+        "size_kb": 72.86,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "114.122.74.226",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+        "status": "success"
+    }
+]

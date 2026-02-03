@@ -42,17 +42,22 @@ link="$send_link"
 printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' "${link:-(none)}"
 
 }
+
+# Kill processes using a TCP port (best-effort across platforms)
+kill_port() {
+	port="$1"
+	if command -v fuser >/dev/null 2>&1; then
+		fuser -k ${port}/tcp >/dev/null 2>&1 || true
 		return
 	fi
-	if has_cmd lsof; then
+	if command -v lsof >/dev/null 2>&1; then
 		pids=$(lsof -t -i tcp:"${port}" 2>/dev/null || true)
 		if [ -n "$pids" ]; then
 			echo "$pids" | xargs -r kill -2 >/dev/null 2>&1 || true
 			return
 		fi
 	fi
-	if has_cmd netstat && has_cmd awk && has_cmd grep; then
-		# try to find PID from netstat (platform-dependent output)
+	if command -v netstat >/dev/null 2>&1 && command -v awk >/dev/null 2>&1 && command -v grep >/dev/null 2>&1; then
 		pid=$(netstat -nlp 2>/dev/null | grep ":${port} " | awk '{print $7}' | cut -d'/' -f1 | head -n1)
 		if [ -n "$pid" ]; then
 			kill -2 "$pid" >/dev/null 2>&1 || true

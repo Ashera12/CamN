@@ -1,13 +1,31 @@
-[Tue Feb  3 09:08:18 2026] PHP 8.4.11 Development Server (http://127.0.0.1:3333) started
-[Tue Feb  3 09:08:19 2026] 127.0.0.1:32895 Accepted
-[Tue Feb  3 09:08:19 2026] 127.0.0.1:32895 [200]: GET /index.php
-[Tue Feb  3 09:08:19 2026] 127.0.0.1:32895 Closing
-[Tue Feb  3 09:09:41 2026] 127.0.0.1:34891 Accepted
-[Tue Feb  3 09:09:41 2026] 127.0.0.1:34891 [200]: GET /favicon.ico
-[Tue Feb  3 09:09:41 2026] 127.0.0.1:34891 Closing
-[Tue Feb  3 09:09:43 2026] 127.0.0.1:32629 Accepted
-[Tue Feb  3 09:09:44 2026] 127.0.0.1:32629 [200]: GET /
-[Tue Feb  3 09:09:44 2026] 127.0.0.1:32629 Closing
-[Tue Feb  3 09:09:44 2026] 127.0.0.1:32633 Accepted
-[Tue Feb  3 09:09:45 2026] 127.0.0.1:32633 [200]: GET /favicon.ico
-[Tue Feb  3 09:09:45 2026] 127.0.0.1:32633 Closing
+[Tue Feb  3 12:48:27 2026] PHP 8.5.1 Development Server (http://0.0.0.0:3333) started
+[Tue Feb  3 12:48:28 2026] 127.0.0.1:56462 Accepted
+[Tue Feb  3 12:48:28 2026] 127.0.0.1:56462 [200]: GET /index.php
+[Tue Feb  3 12:48:28 2026] 127.0.0.1:56462 Closing
+[Tue Feb  3 12:48:39 2026] 127.0.0.1:1824 Accepted
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1824 [302]: GET /favicon.ico
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1824 Closing
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1845 Accepted
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1845 [302]: GET /
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1845 Closing
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1871 Accepted
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1871 [200]: GET /index2.html
+[Tue Feb  3 12:48:42 2026] 127.0.0.1:1871 Closing
+[Tue Feb  3 12:48:43 2026] 127.0.0.1:1881 Accepted
+[Tue Feb  3 12:48:43 2026] 127.0.0.1:1881 [200]: GET /index2.html
+[Tue Feb  3 12:48:43 2026] 127.0.0.1:1881 Closing
+[Tue Feb  3 12:48:44 2026] 127.0.0.1:1899 Accepted
+[Tue Feb  3 12:48:45 2026] 127.0.0.1:1899 [302]: GET /images/favicon.ico
+[Tue Feb  3 12:48:45 2026] 127.0.0.1:1899 Closing
+[Tue Feb  3 12:48:45 2026] 127.0.0.1:1908 Accepted
+[Tue Feb  3 12:48:45 2026] 127.0.0.1:1908 [200]: GET /index2.html
+[Tue Feb  3 12:48:45 2026] 127.0.0.1:1908 Closing
+[Tue Feb  3 12:48:47 2026] 127.0.0.1:1935 Accepted
+[Tue Feb  3 12:48:50 2026] 127.0.0.1:1935 [200]: POST /post.php
+[Tue Feb  3 12:48:50 2026] 127.0.0.1:1935 Closing
+[Tue Feb  3 12:48:51 2026] 127.0.0.1:1982 Accepted
+[Tue Feb  3 12:48:54 2026] 127.0.0.1:1982 [200]: POST /post.php
+[Tue Feb  3 12:48:54 2026] 127.0.0.1:1982 Closing
+[Tue Feb  3 12:48:55 2026] 127.0.0.1:2023 Accepted
+[Tue Feb  3 12:48:58 2026] 127.0.0.1:2023 [200]: POST /post.php
+[Tue Feb  3 12:48:58 2026] 127.0.0.1:2023 Closing

@@ -40,3 +40,222 @@ IP ADDRESS: 127.0.0.1
 USER-AGENT: curl/8.15.0
 =======================================================================
 
+[2026-02-03 03:05:11] IP: 127.0.0.1 | Template: default | Action: 
+[2026-02-03 03:05:11] IP: 127.0.0.1 | Template: default | Action: PAGE_VIEW_DEFAULT
+[2026-02-03 03:14:26] IP: 127.0.0.1 | Template: default | Action: 
+[2026-02-03 03:14:26] IP: 127.0.0.1 | Template: default | Action: PAGE_VIEW_DEFAULT
+[2026-02-03 03:17:09] IP: 127.0.0.1 | Template: default | Action: 
+[2026-02-03 03:17:09] IP: 127.0.0.1 | Template: default | Action: PAGE_VIEW_DEFAULT
+=======================================================================
+[2026-02-03 04:28:02] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:05] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:07] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:13] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:15] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:16] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:19] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:28:21] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:51:01] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:51:03] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:51:05] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:51:12] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:54:19] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:54:20] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 04:54:23] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:38:55] Target Opened Link
+IP ADDRESS: 114.122.85.94
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:38:57] Target Opened Link
+IP ADDRESS: 114.122.85.94
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:39:02] Target Opened Link
+IP ADDRESS: 114.122.85.94
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:39:08] Target Opened Link
+IP ADDRESS: 114.122.85.94
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:03] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:05] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:07] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:14] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:19] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:25] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+=======================================================================
+[2026-02-03 05:43:30] Target Opened Link
+IP ADDRESS: 114.122.74.226
+USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+=======================================================================
+
+╔════════════════════════════════════════════════════════════════════╗
+║ [2026-02-03 05:48:39] TARGET LINK OPENED
+╠════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.74.226
+║ GEOLOCATION: Indonesia | Bandung | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+╠════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠════════════════════════════════════════════════════════════════════╣
+║ LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║ ENCODING: gzip, deflate, br, zstd
+║ REFERER: https://fc840bc04cceeac0-114-122-74-226.serveousercontent.com/
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚════════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════════╗
+║ [2026-02-03 05:48:42] TARGET LINK OPENED
+╠════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.74.226
+║ GEOLOCATION: Indonesia | Bandung | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+╠════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠════════════════════════════════════════════════════════════════════╣
+║ LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║ ENCODING: gzip, deflate, br, zstd
+║ REFERER: https://fc840bc04cceeac0-114-122-74-226.serveousercontent.com/
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚════════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════════╗
+║ [2026-02-03 05:48:45] TARGET LINK OPENED
+╠════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.74.226
+║ GEOLOCATION: Indonesia | Bandung | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+╠════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠════════════════════════════════════════════════════════════════════╣
+║ LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║ ENCODING: gzip, deflate, br, zstd
+║ REFERER: https://fc840bc04cceeac0-114-122-74-226.serveousercontent.com/index2.html
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚════════════════════════════════════════════════════════════════════╝
+

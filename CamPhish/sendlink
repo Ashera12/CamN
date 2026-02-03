@@ -5,5 +5,6 @@ ssh keys, see https://www.ssh.com/academy/ssh/keygen. Once you've generated a ke
 try again, and these instructions will be replaced with instructions on how to
 register your key with serveo.
 [0m
-[32mForwarding HTTP traffic from https://7580430b9277f219-114-122-74-226.serveousercontent.com
+[32mForwarding HTTP traffic from https://fc840bc04cceeac0-114-122-74-226.serveousercontent.com
+[0m[33mPort forwarding for de29ac0ec39b3eb0-114-122-74-226.serveousercontent.com expired
 [0m
