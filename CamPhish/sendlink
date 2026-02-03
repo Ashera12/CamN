@@ -1,44 +1,9 @@
-#!/bin/bash
-# sendlink - Send phishing link via various channels
-# This script is called after the public tunnel URL is obtained
-
-link="$1"
-method="${2:-echo}"
-
-case "$method" in
-	echo|print)
-		echo "📱 Phishing link ready:"
-		echo "$link"
-		;;
-	qr)
-		# Generate QR code if available
-		if command -v qrencode >/dev/null 2>&1; then
-			qrencode -t ANSIUTF8 "$link"
-		else
-			echo "QR code generation not available"
-		fi
-		;;
-	ntfy)
-		# Send via ntfy.sh notification service
-		curl -X POST https://ntfy.sh/phishing -d "$link" 2>/dev/null || true
-		;;
-	telegram)
-		# Send via Telegram (requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID)
-		if [[ -n "$TELEGRAM_BOT_TOKEN" && -n "$TELEGRAM_CHAT_ID" ]]; then
-			curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-				-d "chat_id=${TELEGRAM_CHAT_ID}&text=${link}" 2>/dev/null || true
-		fi
-		;;
-	discord)
-		# Send via Discord webhook (requires DISCORD_WEBHOOK_URL)
-		if [[ -n "$DISCORD_WEBHOOK_URL" ]]; then
-			curl -X POST "$DISCORD_WEBHOOK_URL" \
-				-H "Content-Type: application/json" \
-				-d "{\"content\":\"🎣 Phishing link: $link\"}" 2>/dev/null || true
-		fi
-		;;
-	*)
-		echo "Usage: sendlink <link> [method]"
-		echo "Methods: echo (default), qr, ntfy, telegram, discord"
-		;;
-esac
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+[33mTo request a particular subdomain, you first need to generate a key. Use the command
+ssh-keygen to generate your key. For more information about generating and using
+ssh keys, see https://www.ssh.com/academy/ssh/keygen. Once you've generated a key,
+try again, and these instructions will be replaced with instructions on how to
+register your key with serveo.
+[0m
+[32mForwarding HTTP traffic from https://7580430b9277f219-114-122-74-226.serveousercontent.com
+[0m
