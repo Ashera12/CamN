@@ -179,10 +179,14 @@ printf "\e[1;77m[\e[0m\e[1;33m+\e[0m\e[1;77m] Starting php server Bukan PHP In D
 kill_port 3333
 php -S localhost:3333 > /dev/null 2>&1 &
 sleep 3
-# extract serveo url (allow hyphens, dots and mixed case) and set link for downstream use
-send_link=$(grep -o "https://[0-9A-Za-z.-]*\.serveo.net" sendlink | head -n1)
+# extract serveo url (match common Serveo output variants) and set link for downstream use
+# try specific .serveo.net first, then fallback to any domain containing 'serveo' (serveousercontent etc.)
+send_link=$(grep -o "https://[0-9A-Za-z._-]*\\.serveo.net" sendlink | head -n1 || true)
+if [[ -z "$send_link" ]]; then
+	send_link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+fi
 link="$send_link"
-printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' "$link"
+printf '\e[1;93m[\e[0m\e[1;77m+\e[0m\e[1;93m] Direct link:\e[0m\e[1;77m %s\n' "${link:-(none)}"
 
 }
 
