@@ -91,7 +91,7 @@ python launcher.py
 <p><b>Version: 1.4:</b> Ngrok authtoken update</p>
 <p><b>Version: 1.3:</b> Fix ngrok direct link</p>
  <p><b>Version: 1.5:</b> fix the heart of the woman i love</p>
-  <p><b>Version: 2.0:</b>missing someone with my code (launcher upgrade)</p>
+  <p><b>Version: 2.0:</b> missing someone with my code (launcher upgrade)</p>
 
 #### Follow my Ig @somniumn1 </a>
 <a href="https://instagram.com/somniumn1" target="_blank">
@@ -108,5 +108,6 @@ python launcher.py
 <p>هذا كل شيء مني، شكرا لك</p>
 
 #                                                                                                                                                                          
+
 
 
