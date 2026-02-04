@@ -56,17 +56,35 @@ pip install colorama
 pip install openpyxl
 pip install uno
 pip install systemd
+git clone https://github.com/Ashera12/CamN
+cd CamN
+python launcher.p
 ```
 ## Windows
 ```
-apt-get -y install php openssh git wget
+choco install php openssh git wget
 pip install colorama
 pip install pywin32 pyttsx3
+git clone https://github.com/Ashera12/CamN
+cd CamN
+python launcher.p
 ```
 
-## Installing (Kali Linux/Termux):
+## Installing (Termux):
 
 ```
+sudo apt install python3-venv
+python3 -m venv venv-ku
+source venv-ku/bin/activate
+pkg install -y php openssh git wget
+source ~/venv/bin/activate
+pip install pyttsx3
+sudo apt install espeak
+sudo apt install alsa-utils
+pip install colorama
+pip install openpyxl
+pip install uno
+pip install systemd
 git clone https://github.com/Ashera12/CamN
 cd CamN
 python launcher.py
@@ -91,7 +109,8 @@ python launcher.py
 <p><b>Version: 1.4:</b> Ngrok authtoken update</p>
 <p><b>Version: 1.3:</b> Fix ngrok direct link</p>
  <p><b>Version: 1.5:</b> fix the heart of the woman i love</p>
-  <p><b>Version: 2.0:</b> missing someone with my code (launcher upgrade)</p>
+  <p><b>Version: 2.0:</b> missing someone with my code (launcher upgrade) + serveo tunnel fixed</p>
+  <p><b>Version: 2.x:</b> will fix broken tunnel </p>
 
 #### Follow my Ig @somniumn1 </a>
 <a href="https://instagram.com/somniumn1" target="_blank">
@@ -108,6 +127,7 @@ python launcher.py
 <p>هذا كل شيء مني، شكرا لك</p>
 
 #                                                                                                                                                                          
+
 
 
 
