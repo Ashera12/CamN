@@ -439,5 +439,715 @@
             "referer": "https://ef61505540f06767-114-122-74-226.serveousercontent.com/index2.html"
         },
         "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:20:03",
+        "timestamp_unix": 1770099603,
+        "ip": "114.122.85.94",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:20:04",
+        "timestamp_unix": 1770099604,
+        "ip": "114.122.85.94",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:20:16",
+        "timestamp_unix": 1770099616,
+        "ip": "114.122.85.94",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:20:18",
+        "timestamp_unix": 1770099618,
+        "ip": "114.122.85.94",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:20:20",
+        "timestamp_unix": 1770099620,
+        "ip": "114.122.85.94",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:23:22",
+        "timestamp_unix": 1770099802,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "Direct"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:23:25",
+        "timestamp_unix": 1770099805,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://1eb445714de1a529-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:25:11",
+        "timestamp_unix": 1770099911,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://f6384bd7025228da-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:25:19",
+        "timestamp_unix": 1770099919,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://f6384bd7025228da-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:25:22",
+        "timestamp_unix": 1770099922,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://f6384bd7025228da-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:25:23",
+        "timestamp_unix": 1770099923,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://f6384bd7025228da-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:27:12",
+        "timestamp_unix": 1770100032,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://ae2e623ee3551c6e-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:27:14",
+        "timestamp_unix": 1770100034,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://ae2e623ee3551c6e-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:27:16",
+        "timestamp_unix": 1770100036,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://ae2e623ee3551c6e-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:41:25",
+        "timestamp_unix": 1770100885,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://e46fb29312f3625c-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:41:26",
+        "timestamp_unix": 1770100886,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://e46fb29312f3625c-114-122-74-226.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 06:41:31",
+        "timestamp_unix": 1770100891,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://e46fb29312f3625c-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 23:51:58",
+        "timestamp_unix": 1770162718,
+        "ip": "114.122.83.181",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://bb879936ff511021-114-122-85-78.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 23:52:00",
+        "timestamp_unix": 1770162720,
+        "ip": "114.122.83.181",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://bb879936ff511021-114-122-85-78.serveousercontent.com/"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-03 23:52:07",
+        "timestamp_unix": 1770162727,
+        "ip": "114.122.83.181",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "isp": "Unknown",
+            "latitude": "N/A",
+            "longitude": "N/A"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "headers": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://bb879936ff511021-114-122-85-78.serveousercontent.com/index2.html"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:26:00",
+        "timestamp_unix": 1770164760,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://918f213269ea7abf-114-122-74-226.serveousercontent.com/"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:26:00",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:26:03",
+        "timestamp_unix": 1770164763,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://918f213269ea7abf-114-122-74-226.serveousercontent.com/"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:26:03",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:26:08",
+        "timestamp_unix": 1770164768,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://918f213269ea7abf-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:26:08",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:40:30",
+        "timestamp_unix": 1770165630,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://60a88bcd32234176-114-122-74-226.serveousercontent.com/"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:40:30",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:40:32",
+        "timestamp_unix": 1770165632,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://60a88bcd32234176-114-122-74-226.serveousercontent.com/"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:40:32",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
+    },
+    {
+        "timestamp": "2026-02-04 00:40:37",
+        "timestamp_unix": 1770165637,
+        "ip": "114.122.74.226",
+        "geolocation": {
+            "country": "Indonesia",
+            "city": "Bandung",
+            "postal_code": null,
+            "isp": "Unknown",
+            "as_name": null,
+            "organization": null,
+            "latitude": "N/A",
+            "longitude": "N/A",
+            "timezone": "UTC",
+            "timezone_offset": "+0000"
+        },
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "connection": {
+            "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+            "accept_language": "en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4",
+            "accept_encoding": "gzip, deflate, br, zstd",
+            "referer": "https://60a88bcd32234176-114-122-74-226.serveousercontent.com/index2.html"
+        },
+        "server_info": {
+            "server_time": "2026-02-04 00:40:37",
+            "server_timezone": "UTC",
+            "server_utc_offset": "+0000"
+        },
+        "action": "link_opened"
     }
 ]

