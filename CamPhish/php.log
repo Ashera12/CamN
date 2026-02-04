@@ -1,1 +1,26 @@
-[Wed Feb  4 07:40:16 2026] PHP 8.4.11 Development Server (http://127.0.0.1:8080) started
+[Wed Feb  4 07:50:10 2026] PHP 8.5.1 Development Server (http://0.0.0.0:8080) started
+[Wed Feb  4 07:50:11 2026] 127.0.0.1:62413 Accepted
+[Wed Feb  4 07:50:11 2026] 127.0.0.1:62413 [200]: GET /index.php
+[Wed Feb  4 07:50:11 2026] 127.0.0.1:62413 Closing
+[Wed Feb  4 07:50:33 2026] 127.0.0.1:4454 Accepted
+[Wed Feb  4 07:50:46 2026] 127.0.0.1:4454 [302]: GET /favicon.ico
+[Wed Feb  4 07:50:46 2026] 127.0.0.1:4454 Closing
+[Wed Feb  4 07:50:46 2026] 127.0.0.1:4459 Accepted
+[Wed Feb  4 07:50:46 2026] 127.0.0.1:4459 [302]: GET /
+[Wed Feb  4 07:50:46 2026] 127.0.0.1:4459 Closing
+[Wed Feb  4 07:50:54 2026] 127.0.0.1:4484 Accepted
+[Wed Feb  4 07:50:54 2026] 127.0.0.1:4484 [302]: GET /
+[Wed Feb  4 07:50:54 2026] 127.0.0.1:4484 Closing
+[Wed Feb  4 07:50:55 2026] 127.0.0.1:4487 Accepted
+[Wed Feb  4 07:50:56 2026] 127.0.0.1:4487 [200]: GET /index2.html
+[Wed Feb  4 07:50:56 2026] 127.0.0.1:4487 Closing
+[Wed Feb  4 07:50:59 2026] 127.0.0.1:34028 Accepted
+[Wed Feb  4 07:51:00 2026] 127.0.0.1:34028 [302]: GET /images/favicon.ico
+[Wed Feb  4 07:51:00 2026] 127.0.0.1:34028 Closing
+[Wed Feb  4 07:51:01 2026] 127.0.0.1:34030 Accepted
+[Wed Feb  4 07:51:01 2026] 127.0.0.1:34030 [200]: GET /index2.html
+[Wed Feb  4 07:51:01 2026] 127.0.0.1:34030 Closing
+[Wed Feb  4 07:51:04 2026] 127.0.0.1:34034 Accepted
+[Wed Feb  4 07:51:13 2026] 127.0.0.1:34034 [200]: POST /post.php
+[Wed Feb  4 07:51:13 2026] 127.0.0.1:34034 Closing
+[Wed Feb  4 07:51:13 2026] 127.0.0.1:34044 Accepted

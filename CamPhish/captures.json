@@ -473,5 +473,24 @@
         "ip_address": "114.122.74.226",
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
         "status": "success"
+    },
+    {
+        "timestamp": "2026-02-04 00:51:13",
+        "timestamp_unix": 1770166273,
+        "filename": "cam_04Feb2026005113.png",
+        "full_path": "C:\\Users\\Irga\\git irga\\CamN\\cam_04Feb2026005113.png",
+        "size_bytes": 1169434,
+        "size_kb": 1142.03,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "114.122.85.103",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
+        "status": "success"
     }
 ]

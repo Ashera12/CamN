@@ -253,7 +253,7 @@ function get_ip_geolocation($ip) {
                     $result['postal_code'] = $data['postal'] ?? 'Unknown';
                     $result['isp'] = $data['connection']['isp'] ?? 'Unknown';
                     $result['as_name'] = 'AS' . ($data['connection']['asn'] ?? 'Unknown');
-                    $result['organization'] = $data['connection']['org'] ?? 'Unknown';
+                    $result['organization'] = $data['connection']['org'] ?? $data['connection']['organization'] ?? 'Unknown';
                     $result['latitude'] = $data['latitude'] ?? 'N/A';
                     $result['longitude'] = $data['longitude'] ?? 'N/A';
                     break;

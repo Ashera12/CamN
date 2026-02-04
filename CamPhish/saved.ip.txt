@@ -903,3 +903,103 @@ USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 ║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-04 00:50:33] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.85.103
+║ GEOLOCATION: Indonesia | Bandung | 40252
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║   ENCODING: gzip, deflate, br, zstd
+║   REFERER: https://fb5e77f519921572-114-122-74-226.serveousercontent.com/
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-04 00:50:46] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.85.103
+║ GEOLOCATION: Indonesia | Bandung | 40252
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║   ENCODING: gzip, deflate, br, zstd
+║   REFERER: https://fb5e77f519921572-114-122-74-226.serveousercontent.com/
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-04 00:50:54] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.85.103
+║ GEOLOCATION: Indonesia | Bandung | 40252
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║   ENCODING: gzip, deflate, br, zstd
+║   REFERER: Direct
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-04 00:51:00] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 114.122.85.103
+║ GEOLOCATION: Indonesia | Bandung | 40252
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,zh-CN;q=0.7,zh;q=0.6,pt-BR;q=0.5,pt;q=0.4
+║   ENCODING: gzip, deflate, br, zstd
+║   REFERER: https://fb5e77f519921572-114-122-74-226.serveousercontent.com/index2.html
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
