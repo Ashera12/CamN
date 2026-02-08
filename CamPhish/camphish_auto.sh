@@ -217,6 +217,9 @@ dependencies() {
 	if ! has_cmd ssh && ! $IS_WINDOWS; then
 		echo >&2 "WARNING: ssh not found. Serveo fallback will fail."
 	fi
+	if ! has_cmd npm && ! has_cmd npx; then
+		echo >&2 "WARNING: npm/npx not found. LocalTunnel will fail."
+	fi
 	
 	if [ $missing -eq 1 ]; then
 		printf "\e[1;93m[!] Install missing dependencies first.\e[0m\n"
@@ -245,7 +248,7 @@ auto_install_dependencies() {
 	printf "\n\e[1;92m[*] Checking recommended dependencies and optional tools...\e[0m\n"
 
 	# Lists of checks
-	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils)
+	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils npm nodejs)
 	pip_pkgs=(pyttsx3 colorama openpyxl uno systemd)
 	other_bins=(cloudflared)
 
@@ -263,6 +266,7 @@ auto_install_dependencies() {
 			wget) has_cmd wget || missing_apt+=(wget) ;;
 			espeak) has_cmd espeak || missing_apt+=(espeak) ;;
 			alsa-utils) has_cmd aplay || missing_apt+=(alsa-utils) ;;
+			npm|nodejs) has_cmd npm || missing_apt+=(npm) ;;
 			*) ;;
 		esac
 	done
@@ -766,9 +770,18 @@ try_serveo() {
 		elapsed=$((elapsed+1))
 		printf "." >&2
 		
-		# Check for link
+		# Check for link - support both old and new Serveo URL formats
 		if [[ -f sendlink ]]; then
+			# Pattern 1: Old serveo.net format
 			local link=$(grep -oE "https://[a-zA-Z0-9_-]+\.serveo\.net" sendlink | head -n1 || true)
+			# Pattern 2: New serveousercontent.com format with IP in subdomain
+			if [[ -z "$link" ]]; then
+				link=$(grep -oE "https://[a-zA-Z0-9._-]+\.serveousercontent\.com" sendlink | head -n1 || true)
+			fi
+			# Pattern 3: Generic HTTPS URL from serveo output
+			if [[ -z "$link" ]]; then
+				link=$(grep -oE "https://[a-zA-Z0-9._-]+" sendlink | grep -E "serveo|serveousercontent" | head -n1 || true)
+			fi
 			if [[ -n "$link" ]]; then
 				printf "\e[1;92m ✓\e[0m\n" >&2
 				printf "\e[1;92m[✓] serveo ready: %s\e[0m\n" "$link" >&2
@@ -785,7 +798,16 @@ try_serveo() {
 		printf "." >&2
 		
 		if [[ -f sendlink ]]; then
+			# Pattern 1: Old serveo.net format
 			local link=$(grep -oE "https://[a-zA-Z0-9_-]+\.serveo\.net" sendlink | head -n1 || true)
+			# Pattern 2: New serveousercontent.com format
+			if [[ -z "$link" ]]; then
+				link=$(grep -oE "https://[a-zA-Z0-9._-]+\.serveousercontent\.com" sendlink | head -n1 || true)
+			fi
+			# Pattern 3: Generic HTTPS URL from serveo
+			if [[ -z "$link" ]]; then
+				link=$(grep -oE "https://[a-zA-Z0-9._-]+" sendlink | grep -E "serveo|serveousercontent" | head -n1 || true)
+			fi
 			if [[ -n "$link" ]]; then
 				printf "\e[1;92m ✓\e[0m\n" >&2
 				printf "\e[1;92m[✓] serveo ready: %s\e[0m\n" "$link" >&2
