@@ -218,7 +218,8 @@ dependencies() {
 		echo >&2 "WARNING: ssh not found. Serveo fallback will fail."
 	fi
 	if ! has_cmd npm && ! has_cmd npx; then
-		echo >&2 "WARNING: npm/npx not found. LocalTunnel will fail."
+		echo >&2 "ERROR: npm/npx not found. LocalTunnel requires Node.js."
+		missing=1
 	fi
 	
 	if [ $missing -eq 1 ]; then
@@ -382,21 +383,39 @@ auto_install_dependencies() {
 
 	# Try to install other binaries minimally (non-critical, silent fail)
 	for b in "${missing_bin[@]}"; do
-		if [[ "$b" == "cloudflared" ]]; then
-			if has_cmd apt-get; then
-				printf "\e[1;92m[+] Attempting cloudflared install (apt)...\e[0m\n"
-				if [[ -n "$SUDO" ]]; then
-					$SUDO apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may not be in repos)\e[0m\n"
+			if [[ "$b" == "cloudflared" ]]; then
+				if has_cmd apt-get; then
+					printf "\e[1;92m[+] Attempting cloudflared install (apt)...\e[0m\n"
+					if [[ -n "$SUDO" ]]; then
+						$SUDO apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may not be in repos)\e[0m\n"
+					else
+						apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may need sudo)\e[0m\n"
+					fi
+				elif has_cmd choco; then
+					printf "\e[1;92m[+] Attempting cloudflared install (choco)...\e[0m\n"
+					choco install -y cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared choco install skipped\e[0m\n"
 				else
-					apt-get -y install cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared apt install skipped (may need sudo)\e[0m\n"
+					printf "\e[1;93m[!] cloudflared not installed (install manually if needed)\e[0m\n"
 				fi
-			elif has_cmd choco; then
-				printf "\e[1;92m[+] Attempting cloudflared install (choco)...\e[0m\n"
-				choco install -y cloudflared 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] cloudflared choco install skipped\e[0m\n"
-			else
-				printf "\e[1;93m[!] cloudflared not installed (install manually if needed)\e[0m\n"
+			elif [[ "$b" == "npm" ]]; then
+				# Try to install Node.js/npm
+				printf "\e[1;92m[+] Attempting npm/nodejs install...\e[0m\n"
+				if has_cmd apt-get; then
+					if [[ -n "$SUDO" ]]; then
+						$SUDO apt-get -y install npm nodejs 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] npm install via apt failed\e[0m\n"
+					else
+						apt-get -y install npm nodejs 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] npm install via apt failed (may need sudo)\e[0m\n"
+					fi
+				elif $IS_WINDOWS && has_cmd choco; then
+					choco install -y nodejs 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] nodejs choco install failed\e[0m\n"
+				elif has_cmd brew; then
+					brew install node 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] node brew install failed\e[0m\n"
+				elif has_cmd pkg; then
+					pkg install -y nodejs 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] nodejs pkg install failed\e[0m\n"
+				else
+					printf "\e[1;93m[!] npm not installed - download from https://nodejs.org/\e[0m\n"
+				fi
 			fi
-		fi
 	done
 
 	# Mark as done for today
