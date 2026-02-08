@@ -492,5 +492,43 @@
         "ip_address": "114.122.85.103",
         "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",
         "status": "success"
+    },
+    {
+        "timestamp": "2026-02-08 15:42:07",
+        "timestamp_unix": 1770565327,
+        "filename": "cam_08Feb2026154207.png",
+        "full_path": "C:\\Users\\Irga\\OneDrive\\Documents\\code with winsurf\\CamN\\cam_08Feb2026154207.png",
+        "size_bytes": 20831,
+        "size_kb": 20.34,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "103.139.11.119",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0",
+        "status": "success"
+    },
+    {
+        "timestamp": "2026-02-08 15:42:09",
+        "timestamp_unix": 1770565329,
+        "filename": "cam_08Feb2026154209.png",
+        "full_path": "C:\\Users\\Irga\\OneDrive\\Documents\\code with winsurf\\CamN\\cam_08Feb2026154209.png",
+        "size_bytes": 74608,
+        "size_kb": 72.86,
+        "resolution": "1280x720",
+        "format": "PNG",
+        "device": {
+            "os": "Windows 10",
+            "browser": "Chrome",
+            "device_type": "Desktop",
+            "device_name": "Computer"
+        },
+        "ip_address": "103.139.11.119",
+        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0",
+        "status": "success"
     }
 ]

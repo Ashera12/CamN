@@ -475,14 +475,29 @@ cd $HOME/.cffolder && termux-chroot ./cloudflared tunnel -url "127.0.0.1:7777" -
 else
 cd $HOME/.cffolder && ./cloudflared tunnel -url "127.0.0.1:7777" --logfile "log.txt" > /dev/null 2>&1 &
 fi
-sleep 8
-ngroklink=$(curl -s -N http://127.0.0.1:4040/api/tunnels | grep -o "https://[-0-9a-z]*\.ngrok.io")
+sleep 12
+# Try ngrok API with fallback patterns for both old .ngrok.io and new .ngrok-free.app domains
+ngroklink=$(curl -s -N http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o '"public_url":"https://[^"]*"' 2>/dev/null | head -n1 | sed 's/.*"https:\/\//;s/"$//' | sed 's/^/https:\/\/' || true)
+# Fallback patterns if API doesn't return result
+if [[ -z "$ngroklink" ]]; then
+    ngroklink=$(curl -s -N http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o 'https://[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]\.ngrok\.io' 2>/dev/null | head -n1 || true)
+fi
+if [[ -z "$ngroklink" ]]; then
+    ngroklink=$(curl -s -N http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o 'https://[a-zA-Z0-9_-]\+\.ngrok-free\.app' 2>/dev/null | head -n1 || true)
+fi
 if (echo "$ngroklink" | grep -q "ngrok"); then
 ngrokcheck=true
 else
 ngrokcheck=false
 fi
-cflink=$(grep -o 'https://[-0-9a-z]*\.trycloudflare.com' "$HOME/.cffolder/log.txt")
+# Try multiple patterns for cloudflared URL (BSD grep compatible)
+cflink=$(grep -o 'https://[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]\.trycloudflare\.com' "$HOME/.cffolder/log.txt" 2>/dev/null | head -n1 || true)
+if [[ -z "$cflink" ]]; then
+    cflink=$(grep -o 'https://[a-zA-Z0-9_-]\+\.trycloudflare\.com' "$HOME/.cffolder/log.txt" 2>/dev/null | head -n1 || true)
+fi
+if [[ -z "$cflink" ]]; then
+    cflink=$(grep -o 'https://[^[:space:]]*trycloudflare[^[:space:]]*' "$HOME/.cffolder/log.txt" 2>/dev/null | head -n1 || true)
+fi
 if (echo "$cflink" | grep -q "cloudflare"); then
 cfcheck=true
 else

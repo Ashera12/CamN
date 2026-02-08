@@ -1003,3 +1003,231 @@ USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 ║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:13:03] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ GEOLOCATION: Unknown | Unknown | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: Direct
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:13:06] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ GEOLOCATION: Unknown | Unknown | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: https://ease-timer-numerous-refuse.trycloudflare.com/index2.html
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:15:49] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ GEOLOCATION: Unknown | Unknown | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: Direct
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:15:51] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ GEOLOCATION: Unknown | Unknown | Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ ISP/PROVIDER: Unknown
+║ ORGANIZATION: Unknown
+║ AS NUMBER: Unknown
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: https://peninsula-metabolism-expenditures-political.trycloudflare.com/index2.html
+║   TIMEZONE: UTC (UTC+0000)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:31:15] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ COUNTRY: Unknown ()
+║ STATE/REGION:  | 
+║ CITY: Unknown | Postal: Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ TIMEZONE: 
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ NETWORK INFO:
+║   ISP: Unknown
+║   ASN: Unknown
+║   ORGANIZATION: Unknown
+║   VPN:  | PROXY:  | MOBILE: 
+║   HOSTING:  | TOR: 
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: Direct
+║   SERVER TIME: 2026-02-08 15:31:15 (UTC)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:31:38] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ COUNTRY: Unknown ()
+║ STATE/REGION:  | 
+║ CITY: Unknown | Postal: Unknown
+║ COORDINATES: Lat N/A | Lon N/A
+║ TIMEZONE: 
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ NETWORK INFO:
+║   ISP: Unknown
+║   ASN: Unknown
+║   ORGANIZATION: Unknown
+║   VPN:  | PROXY:  | MOBILE: 
+║   HOSTING:  | TOR: 
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: https://blonde-edwards-strike-aquarium.trycloudflare.com/index2.html
+║   SERVER TIME: 2026-02-08 15:31:38 (UTC)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:42:04] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ COUNTRY: Indonesia (ID)
+║ STATE/REGION: West Java | West Java
+║ CITY: Bandung | Postal: 40173
+║ COORDINATES: Lat -6.9564 | Lon 107.6181
+║ TIMEZONE: Asia/Jakarta
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ NETWORK INFO:
+║   ISP: PT. Cemerlang Multimedia
+║   ASN: AS55699 PT. Cemerlang Multimedia
+║   ORGANIZATION: Starnet
+║   VPN: No | PROXY: No | MOBILE: No
+║   HOSTING: No | TOR: No
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: Direct
+║   SERVER TIME: 2026-02-08 15:42:04 (UTC)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ [2026-02-08 15:42:05] TARGET LINK OPENED
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ IP ADDRESS: 103.139.11.119
+║ COUNTRY: Indonesia (ID)
+║ STATE/REGION: West Java | West Java
+║ CITY: Bandung | Postal: 40173
+║ COORDINATES: Lat -6.9564 | Lon 107.6181
+║ TIMEZONE: Asia/Jakarta
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ NETWORK INFO:
+║   ISP: PT. Cemerlang Multimedia
+║   ASN: AS55699 PT. Cemerlang Multimedia
+║   ORGANIZATION: Starnet
+║   VPN: No | PROXY: No | MOBILE: No
+║   HOSTING: No | TOR: No
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ DEVICE INFO:
+║   OS: Windows 10
+║   BROWSER: Chrome
+║   DEVICE TYPE: Desktop
+║   DEVICE NAME: Computer
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ CONNECTION INFO:
+║   LANGUAGE: en-US,en;q=0.9,id;q=0.8,es;q=0.7,no;q=0.6,tr;q=0.5,ru;q=0.4,pt-BR;q=0.3,pt;q=0.2
+║   ENCODING: gzip
+║   REFERER: https://multimedia-assignment-resist-realistic.trycloudflare.com/index2.html
+║   SERVER TIME: 2026-02-08 15:42:05 (UTC)
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ FULL USER-AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0
+╚══════════════════════════════════════════════════════════════════════════════╝
+
