@@ -218,15 +218,28 @@ dependencies() {
 		echo >&2 "WARNING: ssh not found. Serveo fallback will fail."
 	fi
 	if ! has_cmd npm && ! has_cmd npx; then
-		echo >&2 "ERROR: npm/npx not found. LocalTunnel requires Node.js."
-		missing=1
+		# Check for portable Node.js in local directory
+		local node_dir="$PWD/node-portable"
+		if [[ -f "$node_dir/node.exe" ]] || [[ -f "$node_dir/npm" ]] || [[ -f "$node_dir/npm.cmd" ]]; then
+			# Add to PATH for this session
+			export PATH="$node_dir:$PATH"
+			# Check again after PATH update
+			if ! has_cmd npm && ! has_cmd npx; then
+				echo >&2 "ERROR: npm/npx not found. LocalTunnel requires Node.js."
+				missing=1
+			fi
+		else
+			echo >&2 "ERROR: npm/npx not found. LocalTunnel requires Node.js."
+			missing=1
+		fi
 	fi
 	
 	if [ $missing -eq 1 ]; then
-		printf "\e[1;93m[!] Install missing dependencies first.\e[0m\n"
-		exit 1
+		printf "\e[1;93m[!] Missing dependencies detected - will attempt auto-install\e[0m\n"
+		return 1
 	fi
-	printf "\e[1;92m[✓] Dependencies OK\e[0m\n"
+	printf "\e[1;92m[✓] All required dependencies OK\e[0m\n"
+	return 0
 }
 
 # ============================================================================
@@ -250,8 +263,8 @@ auto_install_dependencies() {
 
 	# Lists of checks
 	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils npm nodejs)
-	pip_pkgs=(pyttsx3 colorama openpyxl uno systemd)
-	other_bins=(cloudflared)
+	pip_pkgs=(colorama)
+	other_bins=(cloudflared npm)
 
 	missing_apt=()
 	missing_pip=()
@@ -412,6 +425,57 @@ auto_install_dependencies() {
 					brew install node 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] node brew install failed\e[0m\n"
 				elif has_cmd pkg; then
 					pkg install -y nodejs 2>&1 | tee -a install.log >/dev/null || printf "\e[1;93m[!] nodejs pkg install failed\e[0m\n"
+				elif $IS_WINDOWS; then
+					# Windows: Download portable Node.js (no admin needed)
+					printf "\e[1;92m[+] Downloading portable Node.js for Windows...\e[0m\n"
+					local node_dir="$PWD/node-portable"
+					local node_zip="node-portable.zip"
+					
+					# Download with progress
+					if has_cmd curl; then
+						printf "\e[1;93m[*] Downloading...\e[0m\n"
+						curl -L --progress-bar -o "$node_zip" "https://nodejs.org/dist/v20.11.1/node-v20.11.1-win-x64.zip" 2>&1 | tee -a install.log || true
+					elif has_cmd wget; then
+						printf "\e[1;93m[*] Downloading...\e[0m\n"
+						wget --progress=bar:force -O "$node_zip" "https://nodejs.org/dist/v20.11.1/node-v20.11.1-win-x64.zip" 2>&1 | tee -a install.log || true
+					fi
+					
+					if [[ -f "$node_zip" ]] && [[ -s "$node_zip" ]]; then
+						printf "\e[1;92m[+] Extracting Node.js...\e[0m\n"
+						mkdir -p "$node_dir"
+						
+						# Extract using available tool
+						if has_cmd unzip; then
+							unzip -q "$node_zip" -d "$node_dir" 2>&1 | tee -a install.log || printf "\e[1;93m[!] unzip failed\e[0m\n"
+						elif $IS_WINDOWS && has_cmd powershell; then
+							powershell -Command "Expand-Archive -Path '$node_zip' -DestinationPath '$node_dir' -Force" 2>&1 | tee -a install.log || printf "\e[1;93m[!] PowerShell extract failed\e[0m\n"
+						fi
+						
+						# Find the extracted node directory
+						if [[ -d "$node_dir/node-v20.11.1-win-x64" ]]; then
+							mv "$node_dir/node-v20.11.1-win-x64"/* "$node_dir/" 2>/dev/null || true
+							rm -rf "$node_dir/node-v20.11.1-win-x64" 2>/dev/null || true
+						fi
+						
+						# Verify and add to PATH
+						if [[ -f "$node_dir/node.exe" ]]; then
+							printf "\e[1;92m[✓] Node.js extracted successfully\e[0m\n"
+							export PATH="$node_dir:$PATH"
+							# Create npm.cmd wrapper if needed
+							if [[ ! -f "$node_dir/npm.cmd" ]] && [[ -f "$node_dir/node.exe" ]]; then
+								# npm should be included, but verify
+								ls -la "$node_dir/" 2>&1 | head -10 >> install.log
+							fi
+							printf "\e[1;92m[✓] npm/nodejs is now available (portable)\e[0m\n"
+						else
+							printf "\e[1;93m[!] Node.js extraction incomplete\e[0m\n"
+						fi
+						
+						rm -f "$node_zip"
+					else
+						printf "\e[1;93m[!] Node.js download failed or empty\e[0m\n"
+						printf "\e[1;93m[!] Please download manually from https://nodejs.org/\e[0m\n"
+					fi
 				else
 					printf "\e[1;93m[!] npm not installed - download from https://nodejs.org/\e[0m\n"
 				fi
@@ -951,9 +1015,34 @@ payload() {
 # ============================================================================
 main() {
 	banner
-	dependencies
-
-	# Check if running in WSL and warn
+	
+	# Check dependencies - if fail, try auto-install
+	if ! dependencies; then
+		if [[ -z "$NO_AUTO_INSTALL" ]]; then
+			printf "\e[1;92m[*] Attempting to auto-install missing dependencies...\e[0m\n"
+			# Force auto-install by removing marker file first
+			rm -f ".camphish_deps_installed"
+			auto_install_dependencies auto || true
+			# Check dependencies again after install
+			printf "\e[1;92m[*] Re-checking dependencies after auto-install...\e[0m\n"
+			if ! dependencies; then
+				printf "\e[1;31m[!] Dependencies still missing after auto-install.\e[0m\n"
+				printf "\e[1;93m[!] Please install manually or check install.log for errors.\e[0m\n"
+				
+				# Ask user if they want to continue without missing deps
+				printf "\e[1;93m[?] Continue anyway? Some features may not work. [y/N]: \e[0m"
+				read continue_choice
+				if [[ "$continue_choice" == "y" ]] || [[ "$continue_choice" == "Y" ]]; then
+					printf "\e[1;93m[*] Continuing without missing dependencies...\e[0m\n"
+				else
+					exit 1
+				fi
+			fi
+		else
+			printf "\e[1;31m[!] Dependencies missing and NO_AUTO_INSTALL is set.\e[0m\n"
+			exit 1
+		fi
+	fi
 	if is_wsl; then
 		printf "\e[1;93m╔════════════════════════════════════════════════════════════╗\e[0m\n"
 		printf "\e[1;93m║\e[0m\e[1;31m              WARNING: Running in WSL2                        \e[0m\e[1;93m║\e[0m\n"
@@ -967,13 +1056,6 @@ main() {
 		printf "\e[1;93m╚════════════════════════════════════════════════════════════╝\e[0m\n"
 		printf "\n"
 		sleep 3
-	fi
-
-	# Auto-install missing dependencies automatically unless NO_AUTO_INSTALL is set
-	if [[ -z "$NO_AUTO_INSTALL" ]]; then
-		auto_install_dependencies auto || true
-	else
-		printf "\e[1;93m[!] Skipping automatic dependency installation (NO_AUTO_INSTALL set)\e[0m\n"
 	fi
 
 	printf "\n\e[1;92m[*] Auto-setup mode\e[0m\n"
