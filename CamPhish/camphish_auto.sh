@@ -125,60 +125,183 @@ try_cloudflared() {
 }
 
 # ============================================================================
+# Universal Platform Detection
+# ============================================================================
 PLATFORM="$(uname -s 2>/dev/null || echo Unknown)"
+ARCH="$(uname -m 2>/dev/null || echo Unknown)"
 IS_DARWIN=false
 IS_LINUX=false
 IS_TERMUX=false
 IS_WINDOWS=false
+IS_FREEBSD=false
+IS_OPENBSD=false
+IS_NETBSD=false
+IS_ANDROID=false
+IS_IOS=false
 
+# Enhanced platform detection
 case "$PLATFORM" in
-	Darwin*) IS_DARWIN=true ;; 
+	Darwin*) 
+		IS_DARWIN=true
+		# Check for iOS (jailbroken)
+		if [[ -f "/Applications" ]] && [[ -d "/var/mobile" ]]; then
+			IS_IOS=true
+		fi
+		;; 
 	Linux*) 
 		IS_LINUX=true
+		# Check for Termux
 		if [ -d "/data/data/com.termux" ] || [ -n "$PREFIX" -a "$PREFIX" = "/data/data/com.termux/files/usr" ]; then
 			IS_TERMUX=true
 		fi
+		# Check for Android (non-Termux)
+		if [[ -f "/system/build.prop" ]] || [[ -d "/system/app" ]]; then
+			IS_ANDROID=true
+		fi
 		;;
 	MINGW*|MSYS*|CYGWIN*) IS_WINDOWS=true ;; 
-	*) ;;
+	FreeBSD*) IS_FREEBSD=true ;;
+	OpenBSD*) IS_OPENBSD=true ;;
+	NetBSD*) IS_NETBSD=true ;;
+	*) 
+		# Fallback detection
+		if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+			IS_WINDOWS=true
+		elif [[ "$OSTYPE" == "darwin"* ]]; then
+			IS_DARWIN=true
+		fi
+		;;
 esac
 
-# Check if running in WSL (warning for user since they want non-WSL solutions)
+# Enhanced WSL/Container detection
 is_wsl() {
+	# WSL detection
 	if grep -qi microsoft /proc/version 2>/dev/null || grep -qi wsl /proc/version 2>/dev/null; then
 		return 0
 	fi
 	if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
 		return 0
 	fi
+	# WSL2 detection
+	if [[ -f "/run/WSL" ]] || [[ -n "$WSL_DISTRO_NAME" ]]; then
+		return 0
+	fi
+	# Docker container detection
+	if [[ -f "/.dockerenv" ]] || [[ -n "$DOCKER_CONTAINER" ]]; then
+		return 0
+	fi
+	# Podman container detection
+	if [[ -f "/run/.containerenv" ]]; then
+		return 0
+	fi
+	return 1
+}
+
+# Architecture detection for universal binaries
+detect_arch() {
+	case "$ARCH" in
+		x86_64|amd64) echo "amd64" ;;
+		i386|i686) echo "386" ;;
+		armv7l|armv7) echo "arm" ;;
+		aarch64|arm64) echo "arm64" ;;
+		mips64) echo "mips64" ;;
+		mips) echo "mips" ;;
+		ppc64le) echo "ppc64le" ;;
+		s390x) echo "s390x" ;;
+		*) echo "unknown" ;;
+	esac
+}
+
+# Universal command checker with fallback paths
+has_cmd() {
+	# Standard PATH check
+	command -v "$1" >/dev/null 2>&1 && return 0
+	
+	# Windows-specific paths
+	if $IS_WINDOWS; then
+		# Check common Windows locations
+		local win_paths=(
+			"/c/Program Files/nodejs/$1.exe"
+			"/c/Program Files (x86)/nodejs/$1.exe"
+			"/c/Windows/System32/$1.exe"
+			"/c/Windows/$1.exe"
+			"/mingw64/bin/$1.exe"
+			"/usr/bin/$1.exe"
+		)
+		for path in "${win_paths[@]}"; do
+			[[ -x "$path" ]] && return 0
+		done
+	fi
+	
+	# Termux-specific paths
+	if $IS_TERMUX; then
+		[[ -x "$PREFIX/bin/$1" ]] && return 0
+		[[ -x "$PREFIX/bin/$1.exe" ]] && return 0
+	fi
+	
+	# Local directory fallback
+	[[ -x "./$1" ]] && return 0
+	[[ -x "./$1.exe" ]] && return 0
+	[[ -x "./node-portable/$1" ]] && return 0
+	[[ -x "./node-portable/$1.exe" ]] && return 0
+	[[ -x "./node-portable/$1.cmd" ]] && return 0
+	
 	return 1
 }
 
 # ============================================================================
 # Utilities
 # ============================================================================
-has_cmd() { command -v "$1" >/dev/null 2>&1; }
 
+# Universal port killer for all platforms
 kill_port() {
 	port="$1"
+	
+	# Modern systems with fuser
 	if has_cmd fuser; then
 		fuser -k ${port}/tcp > /dev/null 2>&1 || true
-		return
+		return 0
 	fi
+	
+	# lsof fallback
 	if has_cmd lsof; then
 		pids=$(lsof -t -i tcp:"${port}" 2>/dev/null || true)
 		if [ -n "$pids" ]; then
 			echo "$pids" | xargs -r kill -2 >/dev/null 2>&1 || true
-			return
+			return 0
 		fi
 	fi
-	if has_cmd netstat && has_cmd awk && has_cmd grep; then
-		pid=$(netstat -nlp 2>/dev/null | grep ":${port} " | awk '{print $7}' | cut -d'/' -f1 | head -n1)
-		if [ -n "$pid" ]; then
-			kill -2 "$pid" >/dev/null 2>&1 || true
-			return
+	
+	# Windows netstat fallback
+	if $IS_WINDOWS && has_cmd netstat; then
+		pids=$(netstat -ano | grep ":${port} " | awk '{print $5}' | head -n1 || true)
+		if [ -n "$pids" ]; then
+			taskkill -PID "$pids" -F > /dev/null 2>&1 || true
+			return 0
 		fi
 	fi
+	
+	# Termux/Android fallback
+	if $IS_TERMUX && has_cmd ss; then
+		pids=$(ss -tlnp | grep ":${port} " | awk '{print $7}' | cut -d',' -f2 | cut -d'=' -f2 || true)
+		if [ -n "$pids" ]; then
+			kill -2 "$pids" >/dev/null 2>&1 || true
+			return 0
+		fi
+	fi
+	
+	# BSD systems fallback
+	if $IS_FREEBSD || $IS_OPENBSD || $IS_NETBSD; then
+		if has_cmd sockstat; then
+			pids=$(sockstat -4 -l | grep ":${port} " | awk '{print $3}' || true)
+			if [ -n "$pids" ]; then
+				kill -2 "$pids" >/dev/null 2>&1 || true
+				return 0
+			fi
+		fi
+	fi
+	
+	return 1
 }
 
 # ============================================================================
@@ -627,31 +750,92 @@ setup_ngrok() {
 
 	# Windows
 	if $IS_WINDOWS; then
-		ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
-		ngrok_file="ngrok-windows-amd64.zip"
+		local arch=$(detect_arch)
+		case "$arch" in
+			amd64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
+				ngrok_file="ngrok-windows-amd64.zip" 
+				;;
+			386) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-386.zip"
+				ngrok_file="ngrok-windows-386.zip" 
+				;;
+			*) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip"
+				ngrok_file="ngrok-windows-amd64.zip" 
+				;;
+		esac
 	# macOS
-	elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$PLATFORM" == "Darwin"* ]]; then
-		local arch=$(uname -m)
-		if [[ "$arch" == "arm64" ]] || [[ "$arch" == "aarch64" ]]; then
-			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-arm64.zip"
-			ngrok_file="ngrok-darwin-arm64.zip"
-		else
-			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip"
-			ngrok_file="ngrok-darwin-amd64.zip"
-		fi
-	# Linux / Termux
+	elif $IS_DARWIN; then
+		local arch=$(detect_arch)
+		case "$arch" in
+			arm64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-arm64.zip"
+				ngrok_file="ngrok-darwin-arm64.zip" 
+				;;
+			amd64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip"
+				ngrok_file="ngrok-darwin-amd64.zip" 
+				;;
+			*) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-darwin-amd64.zip"
+				ngrok_file="ngrok-darwin-amd64.zip" 
+				;;
+		esac
+	# BSD systems
+	elif $IS_FREEBSD || $IS_OPENBSD || $IS_NETBSD; then
+		local arch=$(detect_arch)
+		case "$arch" in
+			amd64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-freebsd-amd64.zip"
+				ngrok_file="ngrok-freebsd-amd64.zip" 
+				;;
+			*) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
+				ngrok_file="ngrok-linux-amd64.zip" 
+				;;
+		esac
+	# Linux / Termux / Android
 	else
-		local arch=$(uname -m)
-		if [[ "$arch" == "aarch64" ]] || [[ "$arch" == "arm64" ]]; then
-			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm64.zip"
-			ngrok_file="ngrok-linux-arm64.zip"
-		elif [[ "$arch" == "armv7l" ]] || [[ "$arch" == "armv7" ]]; then
-			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm.zip"
-			ngrok_file="ngrok-linux-arm.zip"
-		else
-			ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
-			ngrok_file="ngrok-linux-amd64.zip"
-		fi
+		local arch=$(detect_arch)
+		case "$arch" in
+			arm64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm64.zip"
+				ngrok_file="ngrok-linux-arm64.zip" 
+				;;
+			arm) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-arm.zip"
+				ngrok_file="ngrok-linux-arm.zip" 
+				;;
+			amd64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
+				ngrok_file="ngrok-linux-amd64.zip" 
+				;;
+			386) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-386.zip"
+				ngrok_file="ngrok-linux-386.zip" 
+				;;
+			mips64) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-mips64.zip"
+				ngrok_file="ngrok-linux-mips64.zip" 
+				;;
+			mips) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-mips.zip"
+				ngrok_file="ngrok-linux-mips.zip" 
+				;;
+			ppc64le) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-ppc64le.zip"
+				ngrok_file="ngrok-linux-ppc64le.zip" 
+				;;
+			s390x) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-s390x.zip"
+				ngrok_file="ngrok-linux-s390x.zip" 
+				;;
+			*) 
+				ngrok_url="https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip"
+				ngrok_file="ngrok-linux-amd64.zip" 
+				;;
+		esac
 	fi
 
 	# Download
@@ -665,23 +849,43 @@ setup_ngrok() {
 		return 1
 	fi
 
-	# Extract
+	# Universal extraction for all platforms
 	printf "\e[1;92m[+] Extracting...\e[0m\n"
 	if [[ -f "$ngrok_file" ]]; then
+		# Try unzip first (most common)
 		if has_cmd unzip; then
 			unzip -q "$ngrok_file" 2>/dev/null || { printf "\e[1;31m[!] unzip failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+		# Try 7z (Windows)
 		elif has_cmd 7z; then
 			7z x "$ngrok_file" > /dev/null 2>&1 || { printf "\e[1;31m[!] 7z failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+		# PowerShell (Windows)
 		elif $IS_WINDOWS && has_cmd powershell; then
 			powershell -Command "Expand-Archive -Path '$ngrok_file' -DestinationPath '.' -Force" 2>/dev/null || { printf "\e[1;31m[!] PowerShell extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+		# tar (BSD/Linux)
+		elif has_cmd tar; then
+			tar -xf "$ngrok_file" 2>/dev/null || { printf "\e[1;31m[!] tar extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+		# Python fallback (universal)
+		elif has_cmd python3 || has_cmd python; then
+			local py_cmd="python3"
+			has_cmd python3 || py_cmd="python"
+			$py_cmd -c "import zipfile; zipfile.ZipFile('$ngrok_file').extractall('.')" 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
 		else
-			printf "\e[1;31m[!] No extraction tool (unzip/7z/PowerShell)\e[0m\n"
+			printf "\e[1;31m[!] No extraction tool available (unzip/7z/PowerShell/tar/python)\e[0m\n"
 			rm -f "$ngrok_file"
 			return 1
 		fi
-		chmod +x ngrok ngrok.exe 2>/dev/null || true
+		
+		# Set executable permissions for Unix-like systems
+		if ! $IS_WINDOWS; then
+			chmod +x ngrok 2>/dev/null || true
+		fi
+		# Windows executable check
+		if $IS_WINDOWS; then
+			chmod +x ngrok.exe 2>/dev/null || true
+		fi
+		
 		rm -f "$ngrok_file"
-		printf "\e[1;92m[✓] ngrok ready\e[0m\n"
+		printf "\e[1;92m[✓] ngrok ready for %s (%s)\e[0m\n" "$PLATFORM" "$(detect_arch)"
 		return 0
 	else
 		printf "\e[1;31m[!] Download incomplete\e[0m\n"
