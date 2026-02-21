@@ -385,7 +385,7 @@ auto_install_dependencies() {
 	printf "\n\e[1;92m[*] Checking recommended dependencies and optional tools...\e[0m\n"
 
 	# Lists of checks
-	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils npm nodejs unzip)
+	apt_pkgs=(php openssh-client openssh-server git wget espeak alsa-utils npm nodejs unzip python3)
 	pip_pkgs=(colorama)
 	other_bins=(cloudflared npm)
 
@@ -405,6 +405,7 @@ auto_install_dependencies() {
 			alsa-utils) has_cmd aplay || missing_apt+=(alsa-utils) ;;
 			npm|nodejs) has_cmd npm || missing_apt+=(npm) ;;
 			unzip) has_cmd unzip || missing_apt+=(unzip) ;;
+			python3) has_cmd python3 || missing_apt+=(python3) ;;
 			*) ;;
 		esac
 	done
@@ -857,21 +858,52 @@ setup_ngrok() {
 		if $IS_TERMUX; then
 			if has_cmd unzip; then
 				unzip -q "$ngrok_file" 2>/dev/null || {
-					printf "\e[1;31m[!] Termux unzip failed, trying tar...\e[0m\n"
-					if has_cmd tar; then
-						tar -xf "$ngrok_file" 2>/dev/null || { printf "\e[1;31m[!] Termux tar extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+					printf "\e[1;31m[!] Termux unzip failed, trying Python extraction...\e[0m\n"
+					# Python extraction fallback (Termux has python)
+					if has_cmd python3 || has_cmd python; then
+						local py_cmd="python3"
+						has_cmd python3 || py_cmd="python"
+						$py_cmd -c "
+import zipfile
+import sys
+try:
+    with zipfile.ZipFile('$ngrok_file', 'r') as zip_ref:
+        zip_ref.extractall('.')
+    print('[✓] Python extraction successful')
+except Exception as e:
+    print(f'[!] Python extraction failed: {e}')
+    sys.exit(1)
+" 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
 					else
 						printf "\e[1;31m[!] No extraction tool available in Termux\e[0m\n"
-						printf "\e[1;93m[!] Install: pkg install unzip tar\e[0m\n"
+						printf "\e[1;93m[!] Install: pkg install unzip python3\e[0m\n"
 						rm -f "$ngrok_file"
 						return 1
 					fi
 				}
 			else
-				printf "\e[1;31m[!] unzip not available in Termux\e[0m\n"
-				printf "\e[1;93m[!] Install: pkg install unzip\e[0m\n"
-				rm -f "$ngrok_file"
-				return 1
+				printf "\e[1;31m[!] unzip not available in Termux, trying Python...\e[0m\n"
+				# Python extraction fallback
+				if has_cmd python3 || has_cmd python; then
+					local py_cmd="python3"
+					has_cmd python3 || py_cmd="python"
+					$py_cmd -c "
+import zipfile
+import sys
+try:
+    with zipfile.ZipFile('$ngrok_file', 'r') as zip_ref:
+        zip_ref.extractall('.')
+    print('[✓] Python extraction successful')
+except Exception as e:
+    print(f'[!] Python extraction failed: {e}')
+    sys.exit(1)
+" 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+				else
+					printf "\e[1;31m[!] No extraction tool available in Termux\e[0m\n"
+					printf "\e[1;93m[!] Install: pkg install unzip python3\e[0m\n"
+					rm -f "$ngrok_file"
+					return 1
+				fi
 			fi
 		# Try unzip first (most common)
 		elif has_cmd unzip; then
