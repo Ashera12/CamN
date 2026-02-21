@@ -863,7 +863,7 @@ setup_ngrok() {
 					if has_cmd python3 || has_cmd python; then
 						local py_cmd="python3"
 						has_cmd python3 || py_cmd="python"
-						$py_cmd -c "
+						cat > /tmp/extract_ngrok.py << 'EOF'
 import zipfile
 import sys
 try:
@@ -873,7 +873,9 @@ try:
 except Exception as e:
     print(f'[!] Python extraction failed: {e}')
     sys.exit(1)
-" 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+EOF
+						$py_cmd /tmp/extract_ngrok.py 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+						rm -f /tmp/extract_ngrok.py
 					else
 						printf "\e[1;31m[!] No extraction tool available in Termux\e[0m\n"
 						printf "\e[1;93m[!] Install: pkg install unzip python3\e[0m\n"
@@ -887,7 +889,7 @@ except Exception as e:
 				if has_cmd python3 || has_cmd python; then
 					local py_cmd="python3"
 					has_cmd python3 || py_cmd="python"
-					$py_cmd -c "
+					cat > /tmp/extract_ngrok2.py << 'EOF'
 import zipfile
 import sys
 try:
@@ -897,7 +899,9 @@ try:
 except Exception as e:
     print(f'[!] Python extraction failed: {e}')
     sys.exit(1)
-" 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+EOF
+					$py_cmd /tmp/extract_ngrok2.py 2>/dev/null || { printf "\e[1;31m[!] Python extraction failed\e[0m\n"; rm -f "$ngrok_file"; return 1; }
+					rm -f /tmp/extract_ngrok2.py
 				else
 					printf "\e[1;31m[!] No extraction tool available in Termux\e[0m\n"
 					printf "\e[1;93m[!] Install: pkg install unzip python3\e[0m\n"
